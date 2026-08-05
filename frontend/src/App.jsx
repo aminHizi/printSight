@@ -9,6 +9,12 @@ import PrinterDetail from './pages/PrinterDetail';
 import ErrorHistory from './pages/ErrorHistory';
 import Settings from './pages/Settings';
 
+// App.jsx overview:
+// - Exports default `App()` which sets up top-level state and routing.
+// - `MainAppLayout` is the authenticated app shell: sidebar, topbar, and content routes.
+// - Uses SSE (EventSource) to receive live printer telemetry and updates `printers` state.
+// - Persists a lightweight auth state in `localStorage` (`operator` and `token`).
+
 function MainAppLayout({ user, onUpdateUser, onLogout, printers, logs, onCommand, onDisconnect }) {
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
@@ -74,12 +80,12 @@ export default function App() {
   const [logs, setLogs] = useState([]);
 
   // Check mock local storage auth state on mount
-  useEffect(() => {
+  /*useEffect(() => {
     const savedUser = localStorage.getItem('operator');
     if (savedUser) {
       setUser(JSON.parse(savedUser));
     }
-  }, []);
+  }, []);*/
 
   // Fetch logs initially and whenever updates occur
   const fetchLogs = async () => {
@@ -108,6 +114,8 @@ export default function App() {
       return;
     }
 
+    // Create a server-sent-events connection to receive live telemetry.
+    // The backend endpoint should stream newline-delimited JSON messages.
     const eventSource = new EventSource('/api/telemetry?token=' + encodeURIComponent(localStorage.getItem('token') || ''));
 
     eventSource.onmessage = (event) => {

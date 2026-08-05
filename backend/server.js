@@ -56,19 +56,30 @@ app.post("/api/auth/login",async(req,res)=>{
   //search for user with email 
   try{
   const user=await User.findOne({email});
-  if(!user)
+  if(!user){
     console.log("User not found for email:", email);
     return res.status(401).json({success: false, message:"Invalid password or email"})
-
-  const passwordMatch=await bcrypt.compare(password,user.password);
-  if(!passwordMatch)
-    return res.status(401).json({success: false, message:"Invalid password or email"})
-  //create JWT
-  const token=jwt.sign({id:user._id},process.env.JWT_SECRET,{expiresIn:'1h'});
-  res.status(200).json({success: true, token});}
-  catch(error){
-    res.status(500).json({success: false, message:"login error", error:error.message})
+  }
+  const passwordMatch = await bcrypt.compare(password, user.password);
+  if (!passwordMatch) {
+    console.log("Password mismatch for user:", email);
+    return res.status(401).json({ success: false, message: "Invalid password or email" });
   }
 
+  // create JWT
+  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+  console.log("User logged in successfully:", email);
+  res.status(200).json({
+    success: true,
+    token,
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+    },
+  });
+} catch (error) {
+  res.status(500).json({ success: false, message: "login error", error: error.message });
+}
 
 })
