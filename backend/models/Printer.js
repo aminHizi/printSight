@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const PrinterSchema = new mongoose.Schema({
-  owner: { type: String, required: true, index: true }, // Scoped to User email
+  userId: { type: String, required: true, index: true }, // Scoped to User email
   name: { type: String, required: true },
   type: { type: String, required: true },
   status: { type: String, default: 'IDLE' },

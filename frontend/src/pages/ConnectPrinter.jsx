@@ -17,8 +17,8 @@ export default function ConnectPrinter() {
   const [submitting, setSubmitting] = useState(false);
 
 
-  // Called when the user submits the connect form.
-  const handleConnect = async (e) => {
+  // Called when the user submits the add printer form.
+  const addPrinter = async (e) => {
     e.preventDefault();
 
     // Require a printer alias before continuing.
@@ -39,11 +39,11 @@ export default function ConnectPrinter() {
 
     try {
       // Send printer connection request to the backend.
-      const response = await fetch('/api/printers', {
+      const response = await fetch('/api/addPrinter', {
         method: 'POST',
+        credentials: 'include',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + localStorage.getItem('token')
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(payload)
       });
@@ -73,7 +73,7 @@ export default function ConnectPrinter() {
         </div>
 
         <div className="bg-surface-container-low border border-outline-variant rounded-lg p-6">
-          <form className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8" onSubmit={handleConnect}>
+          <form className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8" onSubmit={addPrinter}>
             {/* Left column includes printer alias and address fields. */}
             <div className="space-y-6">
               <div className="space-y-2">

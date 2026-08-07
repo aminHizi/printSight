@@ -42,6 +42,7 @@ export default function Login({ onLoginSuccess }) {
 
       const response = await fetch(endpoint, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
@@ -50,7 +51,7 @@ export default function Login({ onLoginSuccess }) {
 
       // If the request succeeds and the backend reports success, log the user in.
       if (response.ok && data.success) {
-        onLoginSuccess(data.user, data.token);
+        onLoginSuccess(data.user);
         navigate('/');
       } else {
         // Show a useful error message from the backend or a fallback message.

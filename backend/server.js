@@ -5,7 +5,7 @@ const morgan = require('morgan');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-
+const cookieParser = require('cookie-parser');
 // Import Schemas
 const User = require('./models/User');
 const Printer = require('./models/Printer');
@@ -19,9 +19,12 @@ const app = express();
   const PORT = process.env.PORT ;
 const MONGODB_URI = process.env.MONGODB_URI;
 const connectDB = require('./config/db');
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173', // your Vite dev server, not '*'
+  credentials: true // required for cookies to be sent/accepted
+}));
 app.use(express.json());
-
+app.use(cookieParser());
 // ---------- MongoDB Connection ----------
 connectDB();
 //------------------------------------------
@@ -48,38 +51,78 @@ app.post("/api/auth/register",async (req,res)=>{
     res.status(400).json({success: false, message: "Error creating user", error: error.message });
   }
 });
-app.post("/api/auth/login",async(req,res)=>{
+app.post("/api/auth/login", async (req, res) => {
   console.log("Login endpoint hit with body:", req.body);
-  const {email,password}=req.body;
-  if(!email||!password)
-    return res.status(400).json({success: false, message:"Email and password are required"})
-  //search for user with email 
+  const { email, password } = req.body;
+  if (!email || !password)
+    return res.status(400).json({ success: false, message: "Email and password are required" });
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      console.log("User not found for email:", email);
+      return res.status(401).json({ success: false, message: "Invalid password or email" });
+    }
+
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      console.log("Password mismatch for user:", email);
+      return res.status(401).json({ success: false, message: "Invalid password or email" });
+    }
+
+    // create JWT
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Strict',
+      maxAge: 3600000
+    });
+
+    res.status(200).json({
+      success: true,
+      user: { id: user._id, name: user.name, email: user.email }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "login error", error: error.message });
+  }
+});
+app.post('/api/auth/logout', (req, res) => {
+  res.clearCookie('token');
+  res.status(200).json({ success: true });
+});
+app.get('/api/printers', authMiddleware, async (req, res) => {
+  const userId = req.user._id;
   try{
-  const user=await User.findOne({email});
-  if(!user){
-    console.log("User not found for email:", email);
-    return res.status(401).json({success: false, message:"Invalid password or email"})
+    const printers = await Printer.find({ userId });
+    res.status(200).json(printers);
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error fetching printers", error: error.message });
   }
-  const passwordMatch = await bcrypt.compare(password, user.password);
-  if (!passwordMatch) {
-    console.log("Password mismatch for user:", email);
-    return res.status(401).json({ success: false, message: "Invalid password or email" });
+})
+app.post('/api/addPrinter', authMiddleware, async (req, res) => {
+  const userId = req.user._id;
+  const { name, type, ip, materialType, spoolRemaining, filamentDiameter, thumbnail } = req.body;
+
+  if (!name || !type) {
+    return res.status(400).json({ success: false, message: "Printer name and type are required" });
   }
 
-  // create JWT
-  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-  console.log("User logged in successfully:", email);
-  res.status(200).json({
-    success: true,
-    token,
-    user: {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-    },
-  });
-} catch (error) {
-  res.status(500).json({ success: false, message: "login error", error: error.message });
-}
-
+  try {
+    const newPrinter = new Printer({
+      userId,
+      name,
+      type,
+      ip: ip || '',
+      materialType,
+      spoolRemaining,
+      filamentDiameter,
+      thumbnail
+    });
+    await newPrinter.save();
+    res.status(201).json({ success: true, message: "Printer added successfully", printer: newPrinter });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error adding printer", error: error.message });
+  }
 })

@@ -107,13 +107,28 @@ export default function App() {
     fetchLogs();
   }, [user]);
 
+  // Fetch initial printer list on mount
+    const fetchPrinters = async ()=>{
+      try{
+        const response =await fetch('/api/printers',{
+          credentials: 'include',
+        });
+        if(response.ok){
+          const data = await response.json();
+          console.log('Fetched printers in App:', data);
+          setPrinters(data);
+        }
+      }catch(err){
+        console.error('Error fetching printers in App:', err);
+        }
+      }
   // Connect to SSE Telemetry stream
   useEffect(() => {
     if (!user) {
       setPrinters([]);
       return;
     }
-
+    
     // Create a server-sent-events connection to receive live telemetry.
     // The backend endpoint should stream newline-delimited JSON messages.
     const eventSource = new EventSource('/api/telemetry?token=' + encodeURIComponent(localStorage.getItem('token') || ''));
