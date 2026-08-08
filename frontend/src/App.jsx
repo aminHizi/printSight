@@ -88,7 +88,7 @@ export default function App() {
   }, []);*/
 
   // Fetch logs initially and whenever updates occur
-  const fetchLogs = async () => {
+  /*const fetchLogs = async () => {
     try {
       const response = await fetch('/api/logs', {
         headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
@@ -105,7 +105,7 @@ export default function App() {
   useEffect(() => {
     if (!user) return;
     fetchLogs();
-  }, [user]);
+  }, [user]);*/
 
   // Fetch initial printer list on mount
     const fetchPrinters = async ()=>{
@@ -122,6 +122,14 @@ export default function App() {
         console.error('Error fetching printers in App:', err);
         }
       }
+    
+    useEffect(()=>{
+        if (!user) {
+          //setPrinters([]);
+          return;
+        }
+          fetchPrinters();
+      },[user]);
   // Connect to SSE Telemetry stream
   useEffect(() => {
     if (!user) {
