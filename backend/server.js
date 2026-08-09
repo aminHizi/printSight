@@ -23,7 +23,8 @@ app.use(cors({
   origin: 'http://localhost:5173', // your Vite dev server, not '*'
   credentials: true // required for cookies to be sent/accepted
 }));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cookieParser());
 // ---------- MongoDB Connection ----------
 connectDB();
