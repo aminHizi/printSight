@@ -151,7 +151,7 @@ app.get('/api/logs', authMiddleware, async (req, res) => {
   }
 
   try {
-    const logs = await Log.find(query).sort({ createdAt: -1 });
+    const logs = await Log.find(query).sort({ timestamp: -1, createdAt: -1 });
     res.status(200).json(logs);
   } catch (error) {
     res.status(500).json({ success: false, message: "Error fetching logs", error: error.message });
