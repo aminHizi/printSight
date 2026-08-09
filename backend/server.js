@@ -126,4 +126,72 @@ app.post('/api/addPrinter', authMiddleware, async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, message: "Error adding printer", error: error.message });
   }
-})
+});
+
+// GET /api/logs - Fetch logs with optional filters (authenticated)
+app.get('/api/logs', authMiddleware, async (req, res) => {
+  const owner = req.user.email;
+  const { printer, severity, search } = req.query;
+
+  const query = { owner };
+
+  if (printer && printer !== 'All Printers') {
+    query.printerName = printer;
+  }
+
+  if (severity && severity !== 'All Severities') {
+    query.severity = severity;
+  }
+
+  if (search) {
+    query.$or = [
+      { message: { $regex: search, $options: 'i' } },
+      { errorCode: { $regex: search, $options: 'i' } }
+    ];
+  }
+
+  try {
+    const logs = await Log.find(query).sort({ createdAt: -1 });
+    res.status(200).json(logs);
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error fetching logs", error: error.message });
+  }
+});
+
+// POST /api/logs - Receive log from external nodes (public/Postman)
+app.post('/api/logs', async (req, res) => {
+  console.log("Receive log endpoint hit with body:", req.body);
+  const { owner, printerName, errorCode, message, severity, timestamp } = req.body;
+
+  if (!owner || !printerName || !message) {
+    return res.status(400).json({ success: false, message: "owner (email), printerName, and message are required" });
+  }
+
+  try {
+    const newLog = new Log({
+      owner,
+      printerName,
+      errorCode: errorCode || 'I-0000-G',
+      message,
+      severity: severity || 'INFO',
+      timestamp: timestamp || new Date().toISOString().replace('T', ' ').substring(0, 19)
+    });
+
+    await newLog.save();
+
+    // If critical alert, update the printer status to ERROR automatically
+    if (severity === 'CRITICAL') {
+      const user = await User.findOne({ email: owner });
+      if (user) {
+        await Printer.findOneAndUpdate(
+          { name: printerName, userId: user._id },
+          { status: 'ERROR', errorAlert: message }
+        );
+      }
+    }
+
+    res.status(201).json({ success: true, message: "Log received and saved successfully", log: newLog });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error saving log", error: error.message });
+  }
+});
