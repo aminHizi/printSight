@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import logoColored from '../assets/Fab43-Logo.png';
 
 export default function Login({ onLoginSuccess }) {
   const navigate = useNavigate();
@@ -18,7 +19,6 @@ export default function Login({ onLoginSuccess }) {
   const [errorMsg, setErrorMsg] = useState('');
 
   // Runs when the form is submitted.
-  // It sends either a login request or a registration request to the backend.
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -32,10 +32,7 @@ export default function Login({ onLoginSuccess }) {
     }
 
     try {
-      // Choose the correct backend endpoint based on the selected mode.
       const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/register';
-
-      // Build the request body with only the fields needed for that action.
       const body = mode === 'login'
         ? { email, password }
         : { email, password, name };
@@ -49,25 +46,20 @@ export default function Login({ onLoginSuccess }) {
 
       const data = await response.json();
 
-      // If the request succeeds and the backend reports success, log the user in.
       if (response.ok && data.success) {
         onLoginSuccess(data.user);
         navigate('/');
       } else {
-        // Show a useful error message from the backend or a fallback message.
         setErrorMsg(data.message || (mode === 'login' ? 'Invalid operator credentials.' : 'Account creation failed.'));
       }
     } catch (error) {
-      // Handle network or server connection problems.
       console.error(`${mode} error:`, error);
       setErrorMsg('Cannot connect to PrintSight service. Verify network connection.');
     } finally {
-      // Always stop the loading spinner once the request finishes.
       setLoading(false);
     }
   };
 
-  // Switches between login and registration views and clears the old form values.
   const handleModeSwitch = (newMode) => {
     setMode(newMode);
     setErrorMsg('');
@@ -78,57 +70,59 @@ export default function Login({ onLoginSuccess }) {
   };
 
   return (
-    <main className="flex h-screen w-full bg-background select-none">
+    <main className="flex h-screen w-full bg-background dark:bg-slate-950 transition-colors duration-200 select-none bg-grid-pattern">
       {/* Left Section: Authentication */}
-      <section className="w-full lg:w-[40%] flex flex-col justify-center items-center px-gutter bg-surface z-10 border-r border-outline-variant overflow-y-auto custom-scrollbar py-6">
-        <div className="w-full max-w-sm space-y-6">
+      <section className="w-full lg:w-[42%] flex flex-col justify-center items-center px-8 bg-white dark:bg-dark-navy z-10 border-r border-outline-variant dark:border-slate-800 overflow-y-auto custom-scrollbar py-8">
+        <div className="w-full max-w-sm space-y-8">
+          
           {/* Brand Identity */}
-          <div className="mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 flex items-center justify-center bg-primary-container rounded-lg status-glow-primary">
-                <span className="material-symbols-outlined text-on-primary text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>
-                  precision_manufacturing
-                </span>
-              </div>
-              <div>
-                <h1 className="font-headline-md text-headline-md text-primary leading-none font-bold">PrintSight</h1>
-                <p className="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest mt-1">Industrial Fleet Management</p>
-              </div>
+          <div className="flex items-center gap-3">
+            <img 
+              src={logoColored} 
+              alt="Fab43 Logo" 
+              className="h-10 w-auto object-contain" 
+            />
+            <div>
+              <h1 className="font-headline-md text-xl font-bold tracking-tight text-on-surface dark:text-white leading-none">
+                PrintSight
+              </h1>
+              <span className="text-[9px] font-label-caps uppercase tracking-widest text-on-surface-variant dark:text-slate-400 block mt-0.5">
+                FLEET MANAGEMENT
+              </span>
             </div>
           </div>
 
           {/* Header */}
           <div className="space-y-2">
-            <h2 className="font-headline-lg text-[28px] text-on-surface font-bold leading-tight">
-              {mode === 'login' ? 'System Access' : 'Create Operator'}
+            <h2 className="font-headline-lg text-3xl font-extrabold text-on-surface dark:text-white leading-tight">
+              {mode === 'login' ? 'Welcome back' : 'Create Account'}
             </h2>
-            <p className="text-on-surface-variant font-body-sm text-xs">
+            <p className="text-on-surface-variant dark:text-slate-400 font-body-default text-sm">
               {mode === 'login' 
-                ? 'Enter operator credentials to access the fleet dashboard.' 
-                : 'Register a new operator profile on this local workstation.'}
+                ? 'Enter your operator credentials to access the node cluster.' 
+                : 'Register a new operator profile for this local workspace.'}
             </p>
           </div>
 
           {/* Error Message */}
           {errorMsg && (
-            <div className="bg-error/10 border border-error/20 text-error p-3 rounded text-xs flex items-center gap-2">
+            <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-xs flex items-center gap-2.5 dark:bg-red-950/20 dark:border-red-900/30 dark:text-red-400">
               <span className="material-symbols-outlined text-sm">warning</span>
               <span>{errorMsg}</span>
             </div>
           )}
 
           {/* Form */}
-          <form className="space-y-4 mt-6" onSubmit={handleSubmit}>
-            {/* Show the full name field only when creating a new account. */}
+          <form className="space-y-5" onSubmit={handleSubmit}>
             {mode === 'register' && (
               <div className="space-y-1.5">
-                <label className="font-label-caps text-[10px] text-on-surface-variant uppercase font-semibold" htmlFor="name">Full Name</label>
+                <label className="font-label-caps text-[10px] text-on-surface-variant dark:text-slate-450 uppercase font-bold tracking-wider" htmlFor="name">Full Name</label>
                 <div className="relative">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-body-default">
+                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant dark:text-slate-400 text-lg">
                     person
                   </span>
                   <input 
-                    className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg py-2.5 pl-10 pr-4 text-on-surface font-body-default focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-on-surface-variant/40 text-sm" 
+                    className="w-full bg-white dark:bg-slate-900/60 border border-outline-variant dark:border-slate-800 rounded-xl py-3 pl-11 pr-4 text-on-surface dark:text-white font-body-default focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-on-surface-variant/40 text-sm" 
                     id="name" 
                     type="text"
                     value={name}
@@ -141,13 +135,13 @@ export default function Login({ onLoginSuccess }) {
             )}
 
             <div className="space-y-1.5">
-              <label className="font-label-caps text-[10px] text-on-surface-variant uppercase font-semibold" htmlFor="email">Email Address</label>
+              <label className="font-label-caps text-[10px] text-on-surface-variant dark:text-slate-450 uppercase font-bold tracking-wider" htmlFor="email">Email Address</label>
               <div className="relative">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-body-default">
+                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant dark:text-slate-400 text-lg">
                   alternate_email
                 </span>
                 <input 
-                  className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg py-2.5 pl-10 pr-4 text-on-surface font-body-default focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-on-surface-variant/40 text-sm" 
+                  className="w-full bg-white dark:bg-slate-900/60 border border-outline-variant dark:border-slate-800 rounded-xl py-3 pl-11 pr-4 text-on-surface dark:text-white font-body-default focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-on-surface-variant/40 text-sm" 
                   id="email" 
                   type="email"
                   value={email}
@@ -159,13 +153,13 @@ export default function Login({ onLoginSuccess }) {
             </div>
 
             <div className="space-y-1.5">
-              <label className="font-label-caps text-[10px] text-on-surface-variant uppercase font-semibold" htmlFor="password">Access Key</label>
+              <label className="font-label-caps text-[10px] text-on-surface-variant dark:text-slate-450 uppercase font-bold tracking-wider" htmlFor="password">Access Key</label>
               <div className="relative">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-body-default">
+                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant dark:text-slate-400 text-lg">
                   lock
                 </span>
                 <input 
-                  className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg py-2.5 pl-10 pr-4 text-on-surface font-body-default focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-on-surface-variant/40 text-sm" 
+                  className="w-full bg-white dark:bg-slate-900/60 border border-outline-variant dark:border-slate-800 rounded-xl py-3 pl-11 pr-4 text-on-surface dark:text-white font-body-default focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-on-surface-variant/40 text-sm font-mono" 
                   id="password" 
                   type="password"
                   value={password}
@@ -176,16 +170,15 @@ export default function Login({ onLoginSuccess }) {
               </div>
             </div>
 
-            {/* Confirm password is only needed during registration. */}
             {mode === 'register' && (
               <div className="space-y-1.5">
-                <label className="font-label-caps text-[10px] text-on-surface-variant uppercase font-semibold" htmlFor="confirmPassword">Confirm Access Key</label>
+                <label className="font-label-caps text-[10px] text-on-surface-variant dark:text-slate-450 uppercase font-bold tracking-wider" htmlFor="confirmPassword">Confirm Access Key</label>
                 <div className="relative">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-body-default">
+                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant dark:text-slate-400 text-lg">
                     lock_reset
                   </span>
                   <input 
-                    className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg py-2.5 pl-10 pr-4 text-on-surface font-body-default focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-on-surface-variant/40 text-sm" 
+                    className="w-full bg-white dark:bg-slate-900/60 border border-outline-variant dark:border-slate-800 rounded-xl py-3 pl-11 pr-4 text-on-surface dark:text-white font-body-default focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-on-surface-variant/40 text-sm font-mono" 
                     id="confirmPassword" 
                     type="password"
                     value={confirmPassword}
@@ -198,17 +191,18 @@ export default function Login({ onLoginSuccess }) {
             )}
 
             {mode === 'login' && (
-              <div className="flex items-center justify-between py-1">
+              <div className="flex items-center justify-between py-1 text-xs">
                 <label className="flex items-center gap-2 cursor-pointer group">
-                  <input className="rounded border-outline bg-surface-variant text-primary-container focus:ring-primary-container w-4 h-4 cursor-pointer" type="checkbox" />
-                  <span className="font-body-sm text-xs text-on-surface-variant group-hover:text-on-surface transition-colors">Remember station</span>
+                  <input className="rounded border-gray-300 dark:border-slate-800 bg-white dark:bg-slate-900 text-primary focus:ring-primary w-4 h-4 cursor-pointer" type="checkbox" />
+                  <span className="font-body-default text-on-surface-variant dark:text-slate-450 group-hover:text-on-surface dark:group-hover:text-white transition-colors">Remember station</span>
                 </label>
-                <a className="font-body-sm text-xs text-primary hover:underline" href="#" onClick={(e) => e.preventDefault()}>Reset key</a>
+                <a className="font-body-default font-semibold text-primary hover:text-blue-700 transition-colors" href="#" onClick={(e) => e.preventDefault()}>Reset key</a>
               </div>
             )}
 
+            {/* Premium rounded-full primary button with chevron */}
             <button 
-              className={`w-full bg-primary-container text-on-primary-container font-semibold py-3.5 rounded-lg status-glow-primary hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-2 ${loading ? 'opacity-70' : ''}`}
+              className={`w-full bg-primary hover:bg-blue-700 text-white font-semibold py-3.5 px-6 rounded-full transition-all flex items-center justify-center gap-2 mt-4 active:scale-98 shadow-sm ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
               type="submit"
               disabled={loading}
             >
@@ -219,34 +213,34 @@ export default function Login({ onLoginSuccess }) {
                 </>
               ) : (
                 <>
-                  <span>{mode === 'login' ? 'Log in' : 'Create Operator'}</span>
-                  <span className="material-symbols-outlined text-sm">{mode === 'login' ? 'login' : 'how_to_reg'}</span>
+                  <span>{mode === 'login' ? 'Sign in' : 'Create Operator'}</span>
+                  <span className="material-symbols-outlined text-base">arrow_forward</span>
                 </>
               )}
             </button>
           </form>
 
           {/* Secondary Action */}
-          <div className="pt-6 text-center border-t border-outline-variant/30">
-            <p className="font-body-sm text-xs text-on-surface-variant">
+          <div className="pt-6 text-center border-t border-outline-variant/60 dark:border-slate-800/80">
+            <p className="font-body-default text-xs text-on-surface-variant dark:text-slate-400">
               {mode === 'login' ? (
                 <>
-                  Don't have an account?{' '}
+                  Need to configure a new operator?{' '}
                   <button 
                     onClick={() => handleModeSwitch('register')}
-                    className="text-secondary font-bold hover:underline transition-all focus:outline-none"
+                    className="text-primary font-bold hover:underline transition-all focus:outline-none"
                   >
-                    Sign up
+                    Register profile
                   </button>
                 </>
               ) : (
                 <>
-                  Already have an operator account?{' '}
+                  Already registered on this workstation?{' '}
                   <button 
                     onClick={() => handleModeSwitch('login')}
                     className="text-primary font-bold hover:underline transition-all focus:outline-none"
                   >
-                    Log in
+                    Sign in
                   </button>
                 </>
               )}
@@ -254,45 +248,44 @@ export default function Login({ onLoginSuccess }) {
           </div>
 
           {/* Footer Meta */}
-          <div className="pt-8 flex justify-between items-center opacity-40">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-primary status-glow-primary"></div>
-              <span className="font-technical-data text-[10px] uppercase">Service Online</span>
+          <div className="pt-6 flex justify-between items-center opacity-40 text-[9px] font-technical-data uppercase tracking-wider text-on-surface-variant dark:text-slate-400">
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#2563EB]"></span>
+              <span>Service Online</span>
             </div>
-            <span className="font-technical-data text-[10px]">v4.2.0-PRO</span>
+            <span>v4.2.0-PRO</span>
           </div>
         </div>
       </section>
 
-      {/* Right Section: Visual Content (Cinematic Print Shot) */}
-      <section className="hidden lg:block lg:w-[60%] relative overflow-hidden bg-surface-container-lowest">
+      {/* Right Section: Visual Content (Cinematic Camera Feed) */}
+      <section className="hidden lg:block lg:w-[58%] relative overflow-hidden bg-slate-900">
         <img 
-          className="absolute inset-0 w-full h-full object-cover" 
+          className="absolute inset-0 w-full h-full object-cover opacity-80" 
           src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPTFvjtcSR8dXAoDEOHf8Fyvv9vpS829ZeY53LONfk48PyXl_vg6uMRCD29yAC4xoDiNILK-GUIG70swKzpdm863rqBTKKSDFuTV_pv3UM2iUNM7VQ9ClHJ-uzLsFB_DauTLZgdIgt1RQgxJqSShjF1LtCgRoKjEvt_dAWnVlWrSW3KblRGUoaBQm03akV9OdYPAsMJ4o6zckUBeh2nq6dnX76cu7CKiN4ryz3fTbzTu9cf1KCiK3vPg" 
           alt="Active 3D Print Camera Feed" 
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-background/40 to-transparent pointer-events-none"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent pointer-events-none"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-white/30 dark:from-slate-950/40 to-transparent pointer-events-none"></div>
 
-        {/* Live Simulation Overlay on Login Page */}
-        <div className="absolute bottom-margin-page left-margin-page p-gutter bg-surface-container-low/80 backdrop-blur-md border border-outline-variant rounded-lg max-w-md">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-8 h-8 rounded-full border border-primary/30 flex items-center justify-center">
-              <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+        {/* Live Simulation Overlay - Styled with beautiful glassmorphism */}
+        <div className="absolute bottom-10 left-10 p-6 bg-white/70 dark:bg-slate-900/75 backdrop-blur-md border border-white/40 dark:border-slate-800/60 rounded-2xl max-w-sm shadow-xl">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 rounded-full border border-primary/30 flex items-center justify-center bg-white/50 dark:bg-slate-900/50">
+              <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></div>
             </div>
-            <span className="font-technical-data text-xs text-primary font-bold">LIVE MONITORING ACTIVE</span>
+            <span className="font-technical-data text-[10px] text-primary font-bold tracking-wider">LIVE TELEMETRY ACTIVE</span>
           </div>
-          <div className="grid grid-cols-2 gap-stack-md">
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <span className="font-label-caps text-[10px] text-on-surface-variant block">Nozzle Temp</span>
-              <span className="font-technical-data text-xl text-on-surface font-semibold">235.4°C</span>
+              <span className="font-label-caps text-[9px] text-on-surface-variant dark:text-slate-400 uppercase tracking-wider block font-bold">Nozzle Temp</span>
+              <span className="font-technical-data text-lg text-on-surface dark:text-white font-semibold">235.4°C</span>
             </div>
             <div className="space-y-1">
-              <span className="font-label-caps text-[10px] text-on-surface-variant block">Build Progress</span>
-              <span className="font-technical-data text-xl text-secondary font-semibold">74.2%</span>
+              <span className="font-label-caps text-[9px] text-on-surface-variant dark:text-slate-400 uppercase tracking-wider block font-bold">Build Progress</span>
+              <span className="font-technical-data text-lg text-[#2563EB] dark:text-blue-400 font-semibold">74.2%</span>
             </div>
           </div>
-          <div className="mt-4 w-full h-1 bg-surface-variant rounded-full overflow-hidden">
+          <div className="mt-4 w-full h-1.5 bg-gray-250 dark:bg-slate-800 rounded-full overflow-hidden">
             <div className="h-full bg-primary w-[74.2%]"></div>
           </div>
         </div>

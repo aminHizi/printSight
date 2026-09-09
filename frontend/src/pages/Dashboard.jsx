@@ -14,8 +14,8 @@ export default function Dashboard({ printers = [], logs = [], onCommand, searchQ
 
   // Filter printers based on search query
   const filteredPrinters = printers.filter(printer => 
-    printer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    printer.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    printer.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    printer.type?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (printer.currentJob && printer.currentJob.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
@@ -27,295 +27,344 @@ export default function Dashboard({ printers = [], logs = [], onCommand, searchQ
   const circ = 364.4;
   const strokeDashoffset = circ - (loadPercentage / 100) * circ;
 
+  // Default thumbnail fallback
+  const fallbackThumbnail = 'https://lh3.googleusercontent.com/aida-public/AB6AXuAdPoNMfF8SFlhmAnXqp_iKMoKNrIT5mxiFEwM7g-nDLVlZos_TBP6EgHenmgtqWhZIelSVmB5RAdJ-T0xNxJwIXBTIHiAbSEWLQIo2By0QR-jiUZdhZLXGXrGOchXHNrJYjUSutpH61ZTO7v3eRa04k-FZk680X6j3lIr6oPuBOVP4sCTNU9RL7l9s-vUEWQ93IA_o1l48GyDW4mZ1b3Wv6DrlXMiXf9fNeFvotgsyXjGYgP19HOIIyw';
+
   return (
-    <div className="space-y-8 select-none">
+    <div className="space-y-10 select-none text-left">
       {/* Header Info */}
-      <div>
-        <h1 className="font-headline-lg text-3xl font-bold text-on-surface mb-1">Fleet Overview</h1>
-        <p className="text-on-surface-variant font-body-default text-sm">Real-time status of your active 3D printing farm.</p>
+      <div className="space-y-1.5">
+        <h1 className="font-headline-lg text-3xl font-extrabold text-on-surface dark:text-white">Fleet Overview</h1>
+        <p className="text-on-surface-variant dark:text-slate-400 font-body-default text-sm">
+          Real-time status monitor of active nodes in your local 3D print cluster.
+        </p>
       </div>
 
       {/* Stats Bento Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {/* Online */}
-        <div className="bg-surface-container-low border border-outline-variant p-6 rounded-lg">
-          <div className="flex justify-between items-start mb-4">
-            <span className="text-on-surface-variant font-label-caps text-xs font-semibold tracking-wider">ONLINE</span>
-            <div className="w-2.5 h-2.5 rounded-full bg-primary-container status-glow-primary"></div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+        {/* Online Stats Card */}
+        <div className="bg-white dark:bg-slate-900 border border-outline-variant dark:border-slate-800 p-5 rounded-2xl flex flex-col justify-between h-40 shadow-sm hover:shadow-md transition-all duration-200">
+          <div className="w-10 h-10 flex items-center justify-center bg-primary-container dark:bg-blue-950/30 text-secondary dark:text-blue-400 rounded-xl">
+            <span className="material-symbols-outlined text-xl">wifi</span>
           </div>
-          <div className="font-technical-data text-3xl font-bold text-primary">{online}</div>
-          <div className="mt-2 h-1.5 w-full bg-surface-variant rounded-full overflow-hidden">
-            <div className="h-full bg-primary-container" style={{ width: `${total > 0 ? (online / total) * 100 : 0}%` }}></div>
-          </div>
-        </div>
-
-        {/* Printing */}
-        <div className="bg-surface-container-low border border-outline-variant p-6 rounded-lg">
-          <div className="flex justify-between items-start mb-4">
-            <span className="text-on-surface-variant font-label-caps text-xs font-semibold tracking-wider">PRINTING</span>
-            <div className="w-2.5 h-2.5 rounded-full bg-secondary-container"></div>
-          </div>
-          <div className="font-technical-data text-3xl font-bold text-secondary">{printing}</div>
-          <div className="mt-2 h-1.5 w-full bg-surface-variant rounded-full overflow-hidden">
-            <div className="h-full bg-secondary-container" style={{ width: `${total > 0 ? (printing / total) * 100 : 0}%` }}></div>
+          <div>
+            <div className="font-headline-lg text-3xl font-extrabold text-on-surface dark:text-white leading-none">{online}</div>
+            <div className="text-on-surface-variant dark:text-slate-400 font-body-default text-[11px] font-semibold uppercase tracking-wider mt-2">
+              Online Nodes
+            </div>
           </div>
         </div>
 
-        {/* Idle */}
-        <div className="bg-surface-container-low border border-outline-variant p-6 rounded-lg">
-          <div className="flex justify-between items-start mb-4">
-            <span className="text-on-surface-variant font-label-caps text-xs font-semibold tracking-wider">IDLE</span>
-            <div className="w-2.5 h-2.5 rounded-full bg-outline"></div>
+        {/* Printing Stats Card */}
+        <div className="bg-white dark:bg-slate-900 border border-outline-variant dark:border-slate-800 p-5 rounded-2xl flex flex-col justify-between h-40 shadow-sm hover:shadow-md transition-all duration-200">
+          <div className="w-10 h-10 flex items-center justify-center bg-primary-container dark:bg-blue-950/30 text-secondary dark:text-blue-400 rounded-xl">
+            <span className="material-symbols-outlined text-xl">print</span>
           </div>
-          <div className="font-technical-data text-3xl font-bold text-on-surface">{idle}</div>
-          <div className="mt-2 h-1.5 w-full bg-surface-variant rounded-full overflow-hidden">
-            <div className="h-full bg-outline" style={{ width: `${total > 0 ? (idle / total) * 100 : 0}%` }}></div>
+          <div>
+            <div className="font-headline-lg text-3xl font-extrabold text-on-surface dark:text-white leading-none">{printing}</div>
+            <div className="text-on-surface-variant dark:text-slate-400 font-body-default text-[11px] font-semibold uppercase tracking-wider mt-2">
+              Active Jobs
+            </div>
           </div>
         </div>
 
-        {/* In Error */}
-        <div className="bg-surface-container-low border border-outline-variant p-6 rounded-lg">
-          <div className="flex justify-between items-start mb-4">
-            <span className="text-on-surface-variant font-label-caps text-xs font-semibold tracking-wider">IN ERROR</span>
-            <div className={`w-2.5 h-2.5 rounded-full bg-error-container ${inError > 0 ? 'animate-pulse' : ''}`}></div>
+        {/* Idle Stats Card */}
+        <div className="bg-white dark:bg-slate-900 border border-outline-variant dark:border-slate-800 p-5 rounded-2xl flex flex-col justify-between h-40 shadow-sm hover:shadow-md transition-all duration-200">
+          <div className="w-10 h-10 flex items-center justify-center bg-primary-container dark:bg-blue-950/30 text-secondary dark:text-blue-400 rounded-xl">
+            <span className="material-symbols-outlined text-xl">hourglass_empty</span>
           </div>
-          <div className="font-technical-data text-3xl font-bold text-error">{inError}</div>
-          <div className="mt-2 h-1.5 w-full bg-surface-variant rounded-full overflow-hidden">
-            <div className="h-full bg-error-container" style={{ width: `${total > 0 ? (inError / total) * 100 : 0}%` }}></div>
+          <div>
+            <div className="font-headline-lg text-3xl font-extrabold text-on-surface dark:text-white leading-none">{idle}</div>
+            <div className="text-on-surface-variant dark:text-slate-400 font-body-default text-[11px] font-semibold uppercase tracking-wider mt-2">
+              Standby Nodes
+            </div>
+          </div>
+        </div>
+
+        {/* Error Stats Card */}
+        <div className="bg-white dark:bg-slate-900 border border-outline-variant dark:border-slate-800 p-5 rounded-2xl flex flex-col justify-between h-40 shadow-sm hover:shadow-md transition-all duration-200">
+          <div className="w-10 h-10 flex items-center justify-center bg-primary-container dark:bg-blue-950/30 text-secondary dark:text-blue-400 rounded-xl">
+            <span className="material-symbols-outlined text-xl">error_outline</span>
+          </div>
+          <div>
+            <div className="font-headline-lg text-3xl font-extrabold text-on-surface dark:text-white leading-none">{inError}</div>
+            <div className="text-on-surface-variant dark:text-slate-400 font-body-default text-[11px] font-semibold uppercase tracking-wider mt-2">
+              Halted Nodes
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Printer Fleet Title */}
-      <div>
-        <h2 className="font-headline-md text-xl font-bold text-on-surface">Printer Fleet</h2>
+      {/* Fleet Subsection Title */}
+      <div className="pt-4 border-t border-outline-variant/60 dark:border-slate-800/80">
+        <h2 className="font-headline-lg text-2xl font-extrabold text-on-surface dark:text-white">Printer Fleet</h2>
       </div>
+
+      {/* Empty State — when no printers are connected */}
+      {filteredPrinters.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-16 px-6 bg-white dark:bg-slate-900 border border-outline-variant dark:border-slate-800 rounded-2xl shadow-sm">
+          <div className="w-16 h-16 flex items-center justify-center bg-primary-container dark:bg-blue-950/30 text-primary dark:text-blue-400 rounded-2xl mb-5">
+            <span className="material-symbols-outlined text-3xl">precision_manufacturing</span>
+          </div>
+          <h3 className="font-headline-md text-lg font-bold text-on-surface dark:text-white mb-1.5">
+            {searchQuery ? 'No matching printers' : 'No printers connected'}
+          </h3>
+          <p className="text-on-surface-variant dark:text-slate-400 text-sm text-center max-w-sm mb-6">
+            {searchQuery
+              ? `No printers match "${searchQuery}". Try a different search term.`
+              : 'Connect your first printer node to start monitoring your fleet in real-time.'}
+          </p>
+          {!searchQuery && (
+            <button 
+              onClick={() => navigate('/connect')}
+              className="bg-primary hover:bg-blue-700 text-white font-semibold px-6 py-2.5 rounded-full text-sm transition-all flex items-center gap-2 shadow-sm"
+            >
+              <span className="material-symbols-outlined text-base">add</span>
+              <span>Connect a Printer</span>
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Fleet Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
-        {filteredPrinters.map(printer => {
-          let badgeColorClass = 'bg-outline-variant text-on-surface-variant';
-          let statusText = printer.status;
+      {filteredPrinters.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredPrinters.map(printer => {
+            let statusText = printer.status;
+            let badgeColorClass = 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
 
-          if (printer.status === 'PRINTING') {
-            badgeColorClass = 'bg-secondary-container/20 border border-secondary-container/30 text-secondary';
-            statusText = `Printing - ${printer.progress}%`;
-          } else if (printer.status === 'HEATING') {
-            badgeColorClass = 'bg-primary-container/20 border border-primary-container/30 text-primary';
-            statusText = 'Heating';
-          } else if (printer.status === 'ERROR') {
-            badgeColorClass = 'bg-error-container/20 border border-error-container/30 text-error';
-            statusText = printer.errorAlert || 'Alert';
-          } else if (printer.status === 'IDLE') {
-            badgeColorClass = 'bg-surface-variant text-on-surface-variant border border-outline-variant/30';
-            statusText = 'Idle';
-          }
+            if (printer.status === 'PRINTING') {
+              statusText = `Printing - ${printer.progress || 0}%`;
+              badgeColorClass = 'bg-blue-50 text-blue-700 border border-blue-200/55 dark:bg-blue-950/20 dark:text-blue-400 dark:border-blue-900/30';
+            } else if (printer.status === 'HEATING') {
+              statusText = 'Heating';
+              badgeColorClass = 'bg-sky-50 text-sky-700 border border-sky-200/55 dark:bg-sky-950/20 dark:text-sky-400 dark:border-sky-900/30';
+            } else if (printer.status === 'ERROR') {
+              statusText = printer.errorAlert || 'Alert';
+              badgeColorClass = 'bg-red-50 text-red-700 border border-red-200/55 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900/30';
+            } else if (printer.status === 'IDLE') {
+              statusText = 'Idle';
+              badgeColorClass = 'bg-gray-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
+            }
 
-          const printerId = printer._id || printer.id;
-          return (
-            <div 
-              key={printerId}
-              onClick={() => navigate(`/printer/${printerId}`)}
-              className={`bg-surface-container-low border rounded-lg overflow-hidden flex flex-col hover:border-primary transition-colors cursor-pointer group ${
-                printer.status === 'ERROR' ? 'border-error-container/50 hover:border-error' : 'border-outline-variant'
-              }`}
-            >
-              {/* Card Image */}
-              <div className="relative h-48 w-full bg-surface-container-lowest overflow-hidden">
-                <img 
-                  className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" 
-                  src={printer.thumbnail} 
-                  alt={printer.name} 
-                />
-                <div className={`absolute top-3 left-3 flex items-center bg-background/85 backdrop-blur-md px-2.5 py-1 rounded border ${
-                  badgeColorClass.includes('border') ? '' : 'border-outline-variant/30'
-                } ${badgeColorClass}`}>
-                  <div className={`w-2 h-2 rounded-full mr-2 ${
-                    printer.status === 'PRINTING' ? 'bg-secondary-container' : 
-                    printer.status === 'HEATING' ? 'bg-primary-container animate-pulse' :
-                    printer.status === 'ERROR' ? 'bg-error-container animate-pulse' : 'bg-outline-variant'
-                  }`}></div>
-                  <span className="font-label-caps text-[10px] font-bold uppercase">{statusText}</span>
-                </div>
-              </div>
+            const printerId = printer._id || printer.id;
+            const thumbSrc = printer.thumbnail || fallbackThumbnail;
 
-              {/* Card Info */}
-              <div className="p-4 flex flex-col flex-grow">
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="font-bold text-on-surface text-sm group-hover:text-primary transition-colors">{printer.name}</h3>
-                  <span className="material-symbols-outlined text-on-surface-variant text-lg">more_vert</span>
+            return (
+              <div 
+                key={printerId}
+                onClick={() => navigate(`/printer/${printerId}`)}
+                className="bg-white dark:bg-slate-900 border border-outline-variant dark:border-slate-800 rounded-2xl overflow-hidden flex flex-col transition-all duration-200 hover:border-primary hover:shadow-md cursor-pointer group"
+              >
+                {/* Card Thumbnail Image */}
+                <div className="relative h-40 w-full bg-slate-50 dark:bg-slate-950 overflow-hidden border-b border-outline-variant/60 dark:border-slate-800/80">
+                  <img 
+                    className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-300" 
+                    src={thumbSrc} 
+                    alt={printer.name}
+                    onError={(e) => { e.target.src = fallbackThumbnail; }}
+                  />
+                  <div className={`absolute top-3 left-3 flex items-center bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-2.5 py-1 rounded-full border border-outline-variant/60 dark:border-slate-800 text-xs font-semibold ${badgeColorClass}`}>
+                    <div className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
+                      printer.status === 'PRINTING' ? 'bg-secondary' : 
+                      printer.status === 'HEATING' ? 'bg-primary animate-pulse' :
+                      printer.status === 'ERROR' ? 'bg-red-600 animate-pulse' : 'bg-slate-400'
+                    }`}></div>
+                    <span className="font-label-caps text-[9px] font-bold uppercase tracking-wider">{statusText}</span>
+                  </div>
                 </div>
 
-                {printer.status === 'ERROR' ? (
-                  /* Error View */
-                  <div className="grid grid-cols-2 gap-4 mb-6 text-on-error-container bg-error-container/10 p-3 rounded border border-error-container/20">
-                    <div>
-                      <span className="font-label-caps text-[10px] block mb-1">LAST TEMP</span>
-                      <span className="font-technical-data text-sm font-semibold">{printer.nozzleTemp}°C</span>
+                {/* Card Details */}
+                <div className="p-5 flex flex-col flex-grow space-y-3.5">
+                  
+                  {/* Brand Stack */}
+                  <div className="flex gap-3.5 items-center">
+                    <div className="w-10 h-10 flex items-center justify-center bg-primary-container dark:bg-blue-950/30 text-secondary dark:text-blue-400 rounded-xl shrink-0">
+                      <span className="material-symbols-outlined text-lg">precision_manufacturing</span>
                     </div>
-                    <div className="flex items-center">
-                      <span className="material-symbols-outlined text-error text-xl mr-1">warning</span>
-                      <span className="font-body-sm text-xs">{printer.errorAlert || 'Alert'}</span>
+                    <div>
+                      <h3 className="font-headline-md font-bold text-on-surface dark:text-white text-[15px] group-hover:text-primary transition-colors duration-200 leading-tight">
+                        {printer.name}
+                      </h3>
+                      <p className="text-xs text-on-surface-variant dark:text-slate-400 font-body-default leading-none mt-0.5">
+                        {printer.type}
+                      </p>
                     </div>
                   </div>
-                ) : (
-                  /* Standard Telemetries */
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div>
-                      <span className="font-label-caps text-[9px] text-on-surface-variant block mb-1 font-semibold">NOZZLE</span>
-                      <span className={`font-technical-data text-sm font-semibold ${
-                        printer.status === 'HEATING' || printer.status === 'PRINTING' ? 'text-primary' : 'text-on-surface-variant'
-                      }`}>
-                        {printer.nozzleTemp}°C
-                      </span>
+
+                  {/* Telemetries */}
+                  {printer.status === 'ERROR' ? (
+                    <div className="grid grid-cols-2 gap-3 bg-red-50/70 dark:bg-red-950/20 p-3 rounded-xl border border-red-100 dark:border-red-900/20 text-red-800 dark:text-red-300">
+                      <div>
+                        <span className="font-label-caps text-[9px] block font-bold tracking-wider opacity-80">LAST TEMP</span>
+                        <span className="font-technical-data text-xs font-semibold">{printer.nozzleTemp ?? '—'}°C</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="material-symbols-outlined text-red-600 dark:text-red-400 text-base">warning</span>
+                        <span className="font-body-default text-xs leading-none">Error detected</span>
+                      </div>
                     </div>
-                    <div>
-                      <span className="font-label-caps text-[9px] text-on-surface-variant block mb-1 font-semibold">BED</span>
-                      <span className={`font-technical-data text-sm font-semibold ${
-                        printer.status === 'HEATING' || printer.status === 'PRINTING' ? 'text-primary' : 'text-on-surface-variant'
-                      }`}>
-                        {printer.bedTemp}°C
-                      </span>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3 border border-outline-variant/60 dark:border-slate-800/80 p-3 rounded-xl text-on-surface dark:text-white">
+                      <div>
+                        <span className="font-label-caps text-[9px] text-on-surface-variant dark:text-slate-400 block font-bold tracking-wider">NOZZLE</span>
+                        <span className="font-technical-data text-xs font-semibold">{printer.nozzleTemp ?? '—'}°C</span>
+                      </div>
+                      <div>
+                        <span className="font-label-caps text-[9px] text-on-surface-variant dark:text-slate-400 block font-bold tracking-wider">BED</span>
+                        <span className="font-technical-data text-xs font-semibold">{printer.bedTemp ?? '—'}°C</span>
+                      </div>
                     </div>
+                  )}
+
+                  {/* Actions/Job Progress */}
+                  <div className="pt-1.5 mt-auto" onClick={(e) => e.stopPropagation()}>
+                    {printer.status === 'PRINTING' && (
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-[10px] font-label-caps text-on-surface-variant dark:text-slate-400">
+                          <span className="truncate max-w-[120px] font-technical-data font-bold">{printer.currentJob || 'Active Job'}</span>
+                          <span className="font-technical-data">{printer.timeRemaining || '—'}</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                          <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${printer.progress || 0}%` }}></div>
+                        </div>
+                      </div>
+                    )}
+
+                    {printer.status === 'HEATING' && (
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-[10px] font-label-caps text-on-surface-variant dark:text-slate-400">
+                          <span className="truncate font-technical-data font-bold">Pre-heating...</span>
+                          <span className="font-technical-data">{printer.nozzleTemp ?? '—'}/{printer.targetNozzleTemp ?? '—'}°C</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                          <div className="h-full bg-primary animate-pulse rounded-full" style={{ width: '45%' }}></div>
+                        </div>
+                      </div>
+                    )}
+
+                    {printer.status === 'IDLE' && (
+                      <button 
+                        onClick={() => onCommand(printer._id || printer.id, 'START', { jobName: 'Coupler_3V.gcode', nozzle: 230, bed: 60 })}
+                        className="w-full py-2.5 bg-primary hover:bg-blue-700 text-white rounded-full font-label-caps font-bold text-xs transition-all duration-200 flex items-center justify-center gap-1 shadow-sm"
+                      >
+                        <span>Start Job</span>
+                        <span className="material-symbols-outlined text-xs">play_arrow</span>
+                      </button>
+                    )}
+
+                    {printer.status === 'ERROR' && (
+                      <button 
+                        onClick={() => onCommand(printer._id || printer.id, 'DISMISS_ALERT')}
+                        className="w-full py-2.5 border border-red-200 dark:border-red-900/40 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/20 rounded-full font-label-caps font-bold text-xs transition-colors duration-200"
+                      >
+                        DISMISS ALERT
+                      </button>
+                    )}
                   </div>
-                )}
-
-                {/* Card Action / Progress footer */}
-                <div className="mt-auto pt-2" onClick={(e) => e.stopPropagation()}>
-                  {printer.status === 'PRINTING' && (
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-[10px] font-label-caps text-on-surface-variant">
-                        <span className="truncate max-w-[120px] font-technical-data">{printer.currentJob}</span>
-                        <span className="font-technical-data">{printer.timeRemaining}</span>
-                      </div>
-                      <div className="h-1.5 w-full bg-surface-variant rounded-full overflow-hidden">
-                        <div className="h-full bg-primary-container" style={{ width: `${printer.progress}%` }}></div>
-                      </div>
-                    </div>
-                  )}
-
-                  {printer.status === 'HEATING' && (
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-[10px] font-label-caps text-on-surface-variant">
-                        <span className="truncate font-technical-data">Pre-heating...</span>
-                        <span className="font-technical-data">{printer.nozzleTemp}/{printer.targetNozzleTemp}°C</span>
-                      </div>
-                      <div className="h-1.5 w-full bg-surface-variant rounded-full overflow-hidden">
-                        <div className="h-full bg-secondary-container" style={{ width: '45%' }}></div>
-                      </div>
-                    </div>
-                  )}
-
-                  {printer.status === 'IDLE' && (
-                    <button 
-                      onClick={() => onCommand(printer._id || printer.id, 'START', { jobName: 'Coupler_3V.gcode', nozzle: 230, bed: 60 })}
-                      className="w-full py-2 bg-primary-container text-on-primary-container rounded font-label-caps font-bold text-xs hover:opacity-90 active:scale-[0.98] transition-all"
-                    >
-                      START NEW JOB
-                    </button>
-                  )}
-
-                  {printer.status === 'ERROR' && (
-                    <button 
-                      onClick={() => onCommand(printer._id || printer.id, 'DISMISS_ALERT')}
-                      className="w-full py-2 border border-error-container text-error rounded font-label-caps font-bold text-xs hover:bg-error-container/10 transition-colors"
-                    >
-                      DISMISS ALERT
-                    </button>
-                  )}
                 </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Activity Logs & Utilization Layout */}
-      <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* System Activity Log */}
-        <div className="lg:col-span-2 bg-surface-container-high border border-outline-variant p-6 rounded-lg flex flex-col justify-between">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="font-headline-md text-lg font-bold text-on-surface">System Activity Log</h2>
+      <div className="mt-10 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* System Activity Log Card */}
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-outline-variant dark:border-slate-800 p-6 rounded-2xl flex flex-col justify-between shadow-sm">
+          <div className="flex justify-between items-center mb-5">
+            <h2 className="font-headline-lg text-lg font-bold text-on-surface dark:text-white">System Activity Log</h2>
             <span 
               onClick={() => navigate('/errors')}
-              className="text-on-surface-variant text-xs cursor-pointer hover:text-primary transition-colors font-medium"
+              className="text-primary text-xs font-semibold cursor-pointer hover:underline transition-all"
             >
               View All Logs
             </span>
           </div>
 
-          <div className="space-y-4 overflow-y-auto max-h-[280px] pr-2 custom-scrollbar">
-            {logs.slice(0, 5).map(log => {
-              let sevColor = 'text-primary';
-              if (log.severity === 'CRITICAL') sevColor = 'text-error';
-              else if (log.severity === 'WARNING') sevColor = 'text-secondary';
+          <div className="space-y-3 overflow-y-auto max-h-[280px] pr-2 custom-scrollbar">
+            {logs.length === 0 ? (
+              <div className="text-center py-10 text-on-surface-variant/50 dark:text-slate-500 text-xs">
+                No activity logs yet.
+              </div>
+            ) : (
+              logs.slice(0, 5).map(log => {
+                let sevColor = 'text-primary';
+                if (log.severity === 'CRITICAL') sevColor = 'text-red-600 dark:text-red-400';
+                else if (log.severity === 'WARNING') sevColor = 'text-amber-500';
 
-              return (
-                <div key={log.id} className="flex items-start border-b border-outline-variant pb-3 last:border-0 last:pb-0">
-                  <span className="font-technical-data text-on-surface-variant text-xs w-20 shrink-0">{log.timestamp.split(' ')[1] || log.timestamp}</span>
-                  <div className="ml-4">
-                    <p className="text-body-default text-sm text-on-surface">
-                      <span className={`${sevColor} font-bold mr-1.5`}>{log.printerName}</span>
-                      {log.message}
-                    </p>
-                    <span className="text-[10px] text-on-surface-variant font-technical-data uppercase">{log.errorCode}</span>
+                return (
+                  <div key={log.id || log._id} className="flex items-start border-b border-outline-variant/60 dark:border-slate-800/80 pb-3 last:border-0 last:pb-0">
+                    <span className="font-technical-data text-on-surface-variant dark:text-slate-400 text-xs w-20 shrink-0 mt-0.5">{(log.timestamp || '').split(' ')[1] || log.timestamp}</span>
+                    <div className="ml-4">
+                      <p className="text-body-default text-sm text-on-surface dark:text-white leading-relaxed">
+                        <span className={`${sevColor} font-bold mr-1.5`}>{log.printerName}</span>
+                        {log.message}
+                      </p>
+                      <span className="text-[9px] text-on-surface-variant dark:text-slate-400 font-technical-data uppercase tracking-wider mt-1 block">{log.errorCode}</span>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </div>
 
-        {/* Fleet Utilization Load */}
-        <div className="bg-surface-container-high border border-outline-variant p-6 rounded-lg flex flex-col justify-between">
+        {/* Fleet Utilization Load Card */}
+        <div className="bg-white dark:bg-slate-900 border border-outline-variant dark:border-slate-800 p-6 rounded-2xl flex flex-col justify-between shadow-sm">
           <div>
-            <h2 className="font-headline-md text-lg font-bold text-on-surface mb-1">Fleet Load</h2>
-            <p className="text-on-surface-variant text-xs">Total current throughput against capacity.</p>
+            <h2 className="font-headline-lg text-lg font-bold text-on-surface dark:text-white mb-1">Fleet Load</h2>
+            <p className="text-on-surface-variant dark:text-slate-400 text-xs leading-normal">
+              Total active throughput against hardware capacity.
+            </p>
           </div>
 
-          <div className="relative flex-grow flex items-center justify-center py-6">
+          <div className="relative flex-grow flex items-center justify-center py-5">
             {/* SVG Donut Chart */}
-            <svg className="w-32 h-32 transform -rotate-90">
+            <svg className="w-28 h-28 transform -rotate-90">
               <circle 
-                className="text-surface-variant" 
-                cx="64" 
-                cy="64" 
+                className="text-slate-100 dark:text-slate-800" 
+                cx="56" 
+                cy="56" 
                 fill="transparent" 
-                r="58" 
+                r="50" 
                 stroke="currentColor" 
-                strokeWidth="12" 
+                strokeWidth="10" 
               />
               <circle 
                 className="text-primary" 
-                cx="64" 
-                cy="64" 
+                cx="56" 
+                cy="56" 
                 fill="transparent" 
-                r="58" 
+                r="50" 
                 stroke="currentColor" 
-                strokeDasharray={circ} 
-                strokeDashoffset={strokeDashoffset} 
-                strokeWidth="12" 
+                strokeDasharray={314.2} 
+                strokeDashoffset={314.2 - (loadPercentage / 100) * 314.2} 
+                strokeWidth="10" 
                 strokeLinecap="round"
                 style={{ transition: 'stroke-dashoffset 0.5s ease' }}
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="font-technical-data text-3xl font-bold text-primary">{loadPercentage}%</span>
-              <span className="text-[9px] font-label-caps font-semibold text-on-surface-variant tracking-widest mt-0.5">LOADED</span>
+              <span className="font-technical-data text-2xl font-extrabold text-primary">{loadPercentage}%</span>
+              <span className="text-[9px] font-label-caps font-bold text-on-surface-variant dark:text-slate-400 tracking-widest mt-0.5">LOADED</span>
             </div>
           </div>
 
-          <div className="space-y-2 border-t border-outline-variant/30 pt-4">
-            <div className="flex justify-between text-xs">
-              <span className="text-on-surface-variant">Active Job Queues</span>
-              <span className="text-on-surface font-technical-data font-semibold">{activeCount} Running</span>
+          <div className="space-y-2 border-t border-outline-variant/60 dark:border-slate-800/80 pt-4 text-xs">
+            <div className="flex justify-between">
+              <span className="text-on-surface-variant dark:text-slate-400">Active Job Queues</span>
+              <span className="text-on-surface dark:text-white font-technical-data font-semibold">{activeCount} Running</span>
             </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-on-surface-variant">Material Efficiency</span>
-              <span className="text-on-surface font-technical-data font-semibold">94.8% Nominal</span>
+            <div className="flex justify-between">
+              <span className="text-on-surface-variant dark:text-slate-400">Material Efficiency</span>
+              <span className="text-on-surface dark:text-white font-technical-data font-semibold">94.8% Nominal</span>
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );

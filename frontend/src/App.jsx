@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import SideNavBar from './components/SideNavBar';
+import Footer from './components/Footer';
 import TopNavBar from './components/TopNavBar';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -15,55 +15,38 @@ import Settings from './pages/Settings';
 // - Uses SSE (EventSource) to receive live printer telemetry and updates `printers` state.
 // - Persists a lightweight auth state in `localStorage` (`operator` and `token`).
 
-function MainAppLayout({ user, onUpdateUser, onLogout, printers, logs, onCommand, onDisconnect }) {
+function MainAppLayout({ user, onUpdateUser, onLogout, printers, logs, onCommand, onDisconnect, theme, toggleTheme, fetchPrinters }) {
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
-
-  // Identify page titles and whether back button should be shown
-  let title = 'Fleet Overview';
-  let showBackButton = false;
-
-  if (location.pathname === '/connect') {
-    title = 'Connect New Printer';
-    showBackButton = true;
-  } else if (location.pathname.startsWith('/printer/')) {
-    title = 'Printer Telemetry';
-    showBackButton = true;
-  } else if (location.pathname === '/errors') {
-    title = 'System Activity Log';
-  } else if (location.pathname === '/settings') {
-    title = 'Settings';
-  }
 
   // Determine if we should show search bar
   const isSearchable = location.pathname === '/' || location.pathname === '/errors';
 
   return (
-    <div className="min-h-screen bg-background text-on-surface font-body-default flex">
-      {/* Side Navigation */}
-      <SideNavBar user={user} />
+    <div className="min-h-screen bg-background dark:bg-slate-950 text-on-surface dark:text-slate-100 font-body-default flex flex-col transition-colors duration-200">
+      {/* Top Header NavBar */}
+      <TopNavBar 
+        user={user} 
+        searchQuery={searchQuery}
+        setSearchQuery={isSearchable ? setSearchQuery : null}
+        theme={theme}
+        toggleTheme={toggleTheme}
+      />
 
-      {/* Top Header & Main Content Area */}
-      <div className="flex-1 ml-sidebar-width flex flex-col min-h-screen">
-        <TopNavBar 
-          user={user} 
-          title={title} 
-          showBackButton={showBackButton} 
-          searchQuery={searchQuery}
-          setSearchQuery={isSearchable ? setSearchQuery : null}
-        />
+      {/* Main Content Area */}
+      <main className="max-w-7xl w-full mx-auto p-6 md:p-8 pt-[calc(72px+28px)] flex-grow bg-grid-pattern overflow-x-hidden">
+        <Routes>
+          <Route path="/" element={<Dashboard printers={printers} logs={logs} onCommand={onCommand} searchQuery={searchQuery} />} />
+          <Route path="/connect" element={<ConnectPrinter onPrinterAdded={fetchPrinters} />} />
+          <Route path="/printer/:id" element={<PrinterDetail printers={printers} logs={logs} onCommand={onCommand} onDisconnect={onDisconnect} />} />
+          <Route path="/errors" element={<ErrorHistory printers={printers} />} />
+          <Route path="/settings" element={<Settings user={user} onUpdateUser={onUpdateUser} onLogout={onLogout} />} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </main>
 
-        <main className="p-margin-page pt-[calc(64px+32px)] flex-grow overflow-x-hidden">
-          <Routes>
-            <Route path="/" element={<Dashboard printers={printers} logs={logs} onCommand={onCommand} searchQuery={searchQuery} />} />
-            <Route path="/connect" element={<ConnectPrinter />} />
-            <Route path="/printer/:id" element={<PrinterDetail printers={printers} logs={logs} onCommand={onCommand} onDisconnect={onDisconnect} />} />
-            <Route path="/errors" element={<ErrorHistory printers={printers} />} />
-            <Route path="/settings" element={<Settings user={user} onUpdateUser={onUpdateUser} onLogout={onLogout} />} />
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
-        </main>
-      </div>
+      {/* Footer */}
+      <Footer />
 
       {/* Atmospheric Background Decorations */}
       <div className="fixed inset-0 pointer-events-none z-[-1] opacity-20">
@@ -78,19 +61,32 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [printers, setPrinters] = useState([]);
   const [logs, setLogs] = useState([]);
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
 
   // Check mock local storage auth state on mount
-  /*useEffect(() => {
+  useEffect(() => {
     const savedUser = localStorage.getItem('operator');
     if (savedUser) {
       setUser(JSON.parse(savedUser));
     }
-  }, []);*/
+  }, []);
 
   // Fetch logs initially and whenever updates occur
-  /*const fetchLogs = async () => {
+  const fetchLogs = async () => {
     try {
       const response = await fetch('/api/logs', {
+        credentials: 'include',
         headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
       });
       if (response.ok) {
@@ -105,7 +101,9 @@ export default function App() {
   useEffect(() => {
     if (!user) return;
     fetchLogs();
-  }, [user]);*/
+    const interval = setInterval(fetchLogs, 5000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   // Fetch initial printer list on mount
     const fetchPrinters = async ()=>{
@@ -128,10 +126,12 @@ export default function App() {
           //setPrinters([]);
           return;
         }
-          fetchPrinters();
+        fetchPrinters();
+        const interval = setInterval(fetchPrinters, 5000);
+        return () => clearInterval(interval);
       },[user]);
-  // Connect to SSE Telemetry stream
-  useEffect(() => {
+  // Connect to SSE Telemetry stream (disabled in favor of interval polling)
+  /*useEffect(() => {
     if (!user) {
       setPrinters([]);
       return;
@@ -162,7 +162,7 @@ export default function App() {
     return () => {
       eventSource.close();
     };
-  }, [user]);
+  }, [user]);*/
 
   const handleLoginSuccess = (operatorData, token) => {
     localStorage.setItem('operator', JSON.stringify(operatorData));
@@ -186,9 +186,9 @@ export default function App() {
     try {
       const response = await fetch(`/api/printers/${printerId}/command`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + localStorage.getItem('token')
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ command, value })
       });
@@ -206,7 +206,7 @@ export default function App() {
     try {
       const response = await fetch(`/api/printers/${printerId}`, {
         method: 'DELETE',
-        headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+        credentials: 'include'
       });
       if (response.ok) {
         setPrinters(prev => prev.filter(p => p.id !== printerId && p._id !== printerId));
@@ -236,6 +236,9 @@ export default function App() {
                 logs={logs}
                 onCommand={handleCommand}
                 onDisconnect={handleDisconnect}
+                theme={theme}
+                toggleTheme={toggleTheme}
+                fetchPrinters={fetchPrinters}
               />
             ) : (
               <Navigate to="/login" />

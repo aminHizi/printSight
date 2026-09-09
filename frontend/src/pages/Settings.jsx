@@ -82,120 +82,143 @@ export default function Settings({ user, onUpdateUser, onLogout }) {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-stack-md pb-margin-page select-none text-left">
+    <div className="max-w-4xl mx-auto space-y-8 pb-12 select-none text-left">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="font-headline-lg text-3xl font-bold text-on-surface mb-1">Settings</h1>
-        <p className="text-on-surface-variant font-body-default text-sm">Manage operator workstation credentials and fleet notification filters.</p>
+      <div className="space-y-1.5 border-b border-outline-variant/60 dark:border-slate-800/80 pb-6">
+        <h1 className="font-headline-lg text-3xl font-extrabold text-on-surface dark:text-white">Settings</h1>
+        <p className="text-on-surface-variant dark:text-slate-400 font-body-default text-sm">
+          Manage operator workstation configurations, workstation keys, and alert preferences.
+        </p>
       </div>
 
-      {/* Section 1: Account */}
-      <section className="bg-surface-container-low border border-outline-variant rounded-lg p-6">
-        <div className="flex items-center gap-3 mb-6">
-          <span className="material-symbols-outlined text-primary text-2xl">person</span>
-          <h3 className="font-headline-md text-lg font-bold text-on-surface">Account Details</h3>
+      {/* Section 1: Account Details */}
+      <section className="bg-white dark:bg-slate-900 border border-outline-variant dark:border-slate-800 rounded-2xl p-8 shadow-sm">
+        <div className="flex items-center gap-4 mb-8">
+          {/* Identical Blue Icon Badge */}
+          <div className="w-12 h-12 flex items-center justify-center bg-primary-container dark:bg-blue-950/30 text-secondary dark:text-blue-400 rounded-xl shrink-0">
+            <span className="material-symbols-outlined text-2xl">person</span>
+          </div>
+          <div>
+            <h3 className="font-headline-lg text-lg font-bold text-on-surface dark:text-white">Account Details</h3>
+            <p className="text-xs text-on-surface-variant dark:text-slate-400 mt-0.5">Manage operator profiles and Station identifiers.</p>
+          </div>
         </div>
+
         <form onSubmit={handleSaveAccount} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="font-label-caps text-[10px] text-on-surface-variant font-semibold">FULL NAME</label>
+              <label className="font-label-caps text-[10px] text-on-surface-variant dark:text-slate-450 uppercase font-bold tracking-wider">Full Name</label>
               <input
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full bg-surface border border-outline-variant/60 rounded p-3 text-on-surface font-body-default focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-sm"
+                className="w-full bg-white dark:bg-slate-950 border border-outline-variant dark:border-slate-800 rounded-xl p-3.5 text-on-surface dark:text-white font-body-default focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-sm"
                 type="text"
                 required
               />
             </div>
             <div className="space-y-2">
-              <label className="font-label-caps text-[10px] text-on-surface-variant font-semibold">EMAIL ADDRESS</label>
+              <label className="font-label-caps text-[10px] text-on-surface-variant dark:text-slate-450 uppercase font-bold tracking-wider">Email Address</label>
               <input
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-surface border border-outline-variant/60 rounded p-3 text-on-surface font-body-default focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-sm"
+                className="w-full bg-white dark:bg-slate-950 border border-outline-variant dark:border-slate-800 rounded-xl p-3.5 text-on-surface dark:text-white font-body-default focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-sm"
                 type="email"
                 required
               />
             </div>
           </div>
-          <div className="flex justify-end pt-2">
+          <div className="flex justify-end pt-2 border-t border-outline-variant/60 dark:border-slate-800/80">
             <button
               type="submit"
               disabled={savingAccount}
-              className="bg-primary-container text-on-primary px-6 py-2.5 rounded-lg font-label-caps font-bold text-xs hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/10 disabled:opacity-50"
+              className="bg-primary hover:bg-blue-700 text-white font-label-caps font-bold px-6 py-2.5 rounded-full text-xs transition-all shadow-sm disabled:opacity-50"
             >
-              {savingAccount ? 'SAVING...' : 'SAVE CHANGES'}
+              {savingAccount ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </form>
       </section>
 
       {/* Section 2: Change Password */}
-      <section className="bg-surface-container-low border border-outline-variant rounded-lg p-6">
-        <div className="flex items-center gap-3 mb-6">
-          <span className="material-symbols-outlined text-primary text-2xl">lock</span>
-          <h3 className="font-headline-md text-lg font-bold text-on-surface">Change Password</h3>
+      <section className="bg-white dark:bg-slate-900 border border-outline-variant dark:border-slate-800 rounded-2xl p-8 shadow-sm">
+        <div className="flex items-center gap-4 mb-8">
+          {/* Identical Blue Icon Badge */}
+          <div className="w-12 h-12 flex items-center justify-center bg-primary-container dark:bg-blue-950/30 text-secondary dark:text-blue-400 rounded-xl shrink-0">
+            <span className="material-symbols-outlined text-2xl">lock</span>
+          </div>
+          <div>
+            <h3 className="font-headline-lg text-lg font-bold text-on-surface dark:text-white">Security Keys</h3>
+            <p className="text-xs text-on-surface-variant dark:text-slate-400 mt-0.5">Update local workstation access keys.</p>
+          </div>
         </div>
+
         <form onSubmit={handleUpdatePassword} className="space-y-6">
           <div className="space-y-4 max-w-md">
             <div className="space-y-2">
-              <label className="font-label-caps text-[10px] text-on-surface-variant font-semibold">CURRENT PASSWORD</label>
+              <label className="font-label-caps text-[10px] text-on-surface-variant dark:text-slate-450 uppercase font-bold tracking-wider">Current Password</label>
               <input
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                className="w-full bg-surface border border-outline-variant/60 rounded p-3 text-on-surface font-body-default focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-sm"
+                className="w-full bg-white dark:bg-slate-950 border border-outline-variant dark:border-slate-800 rounded-xl p-3.5 text-on-surface dark:text-white font-body-default focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-sm font-mono"
                 placeholder="••••••••"
                 type="password"
                 required
               />
             </div>
             <div className="space-y-2">
-              <label className="font-label-caps text-[10px] text-on-surface-variant font-semibold">NEW PASSWORD</label>
+              <label className="font-label-caps text-[10px] text-on-surface-variant dark:text-slate-450 uppercase font-bold tracking-wider">New Password</label>
               <input
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full bg-surface border border-outline-variant/60 rounded p-3 text-on-surface font-body-default focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-sm"
+                className="w-full bg-white dark:bg-slate-950 border border-outline-variant dark:border-slate-800 rounded-xl p-3.5 text-on-surface dark:text-white font-body-default focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-sm font-mono"
                 placeholder="••••••••"
                 type="password"
                 required
               />
             </div>
             <div className="space-y-2">
-              <label className="font-label-caps text-[10px] text-on-surface-variant font-semibold">CONFIRM NEW PASSWORD</label>
+              <label className="font-label-caps text-[10px] text-on-surface-variant dark:text-slate-450 uppercase font-bold tracking-wider">Confirm New Password</label>
               <input
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full bg-surface border border-outline-variant/60 rounded p-3 text-on-surface font-body-default focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-sm"
+                className="w-full bg-white dark:bg-slate-950 border border-outline-variant dark:border-slate-800 rounded-xl p-3.5 text-on-surface dark:text-white font-body-default focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-sm font-mono"
                 placeholder="••••••••"
                 type="password"
                 required
               />
             </div>
           </div>
-          <div className="flex justify-end pt-2">
+          <div className="flex justify-end pt-2 border-t border-outline-variant/60 dark:border-slate-800/80">
             <button
               type="submit"
               disabled={savingPassword}
-              className="border border-outline-variant text-on-surface px-6 py-2.5 rounded-lg font-label-caps font-bold text-xs hover:bg-surface-variant transition-all active:scale-95 disabled:opacity-50"
+              className="bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-850 text-primary border border-primary font-label-caps font-bold px-6 py-2.5 rounded-full text-xs transition-all shadow-sm disabled:opacity-50"
             >
-              {savingPassword ? 'UPDATING...' : 'UPDATE PASSWORD'}
+              {savingPassword ? 'Updating...' : 'Update Password'}
             </button>
           </div>
         </form>
       </section>
 
       {/* Section 3: Preferences */}
-      <section className="bg-surface-container-low border border-outline-variant rounded-lg p-6">
-        <div className="flex items-center gap-3 mb-6">
-          <span className="material-symbols-outlined text-secondary text-2xl">tune</span>
-          <h3 className="font-headline-md text-lg font-bold text-on-surface">System Preferences</h3>
+      <section className="bg-white dark:bg-slate-900 border border-outline-variant dark:border-slate-800 rounded-2xl p-8 shadow-sm">
+        <div className="flex items-center gap-4 mb-8">
+          {/* Identical Blue Icon Badge */}
+          <div className="w-12 h-12 flex items-center justify-center bg-primary-container dark:bg-blue-950/30 text-secondary dark:text-blue-400 rounded-xl shrink-0">
+            <span className="material-symbols-outlined text-2xl">tune</span>
+          </div>
+          <div>
+            <h3 className="font-headline-lg text-lg font-bold text-on-surface dark:text-white">System Preferences</h3>
+            <p className="text-xs text-on-surface-variant dark:text-slate-400 mt-0.5">Toggle notification digests and sync parameters.</p>
+          </div>
         </div>
+
         <div className="space-y-4">
-          {/* Toggle 1 */}
-          <div className="flex items-center justify-between py-4 border-b border-outline-variant/30">
+          {/* Push Notifications Toggle */}
+          <div className="flex items-center justify-between py-4 border-b border-outline-variant/60 dark:border-slate-800/80">
             <div>
-              <p className="font-body-default text-sm text-on-surface font-semibold">Critical Error Push Notifications</p>
-              <p className="text-xs text-on-surface-variant">Receive alerts on your mobile device when a printer halts.</p>
+              <p className="font-body-default text-sm text-on-surface dark:text-white font-bold">Critical Push Alerts</p>
+              <p className="text-xs text-on-surface-variant dark:text-slate-400 mt-0.5">Send alerts to operators when hardware encounters critical halts.</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input 
@@ -204,15 +227,15 @@ export default function Settings({ user, onUpdateUser, onLogout }) {
                 onChange={(e) => handleTogglePreference('critical', e.target.checked)}
                 className="sr-only peer" 
               />
-              <div className="w-11 h-6 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+              <div className="w-11 h-6 bg-slate-200 dark:bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
             </label>
           </div>
 
-          {/* Toggle 2 */}
-          <div className="flex items-center justify-between py-4 border-b border-outline-variant/30">
+          {/* Performance Digest Toggle */}
+          <div className="flex items-center justify-between py-4 border-b border-outline-variant/60 dark:border-slate-800/80">
             <div>
-              <p className="font-body-default text-sm text-on-surface font-semibold">Weekly Performance Digest</p>
-              <p className="text-xs text-on-surface-variant">Email summary of fleet uptime and material usage.</p>
+              <p className="font-body-default text-sm text-on-surface dark:text-white font-bold">Weekly Performance Digest</p>
+              <p className="text-xs text-on-surface-variant dark:text-slate-400 mt-0.5">Send email telemetry reports and material efficiency logs.</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input 
@@ -221,15 +244,15 @@ export default function Settings({ user, onUpdateUser, onLogout }) {
                 onChange={(e) => handleTogglePreference('weekly', e.target.checked)}
                 className="sr-only peer" 
               />
-              <div className="w-11 h-6 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary-container"></div>
+              <div className="w-11 h-6 bg-slate-200 dark:bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
             </label>
           </div>
 
-          {/* Toggle 3 */}
+          {/* Auto Refresh Toggle */}
           <div className="flex items-center justify-between py-4">
             <div>
-              <p className="font-body-default text-sm text-on-surface font-semibold">Auto-Refresh Dashboard</p>
-              <p className="text-xs text-on-surface-variant">Update dashboard metrics every 30 seconds automatically.</p>
+              <p className="font-body-default text-sm text-on-surface dark:text-white font-bold">Auto-Refresh Dashboard</p>
+              <p className="text-xs text-on-surface-variant dark:text-slate-400 mt-0.5">Fetch and refresh node telemetry every 30 seconds automatically.</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input 
@@ -238,54 +261,64 @@ export default function Settings({ user, onUpdateUser, onLogout }) {
                 onChange={(e) => handleTogglePreference('refresh', e.target.checked)}
                 className="sr-only peer" 
               />
-              <div className="w-11 h-6 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+              <div className="w-11 h-6 bg-slate-200 dark:bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
             </label>
           </div>
         </div>
       </section>
 
       {/* Section 4: Danger Zone */}
-      <section className="bg-surface-container-low border border-error-container/50 rounded-lg p-6">
-        <div className="flex items-center gap-3 mb-6">
-          <span className="material-symbols-outlined text-error text-2xl">warning</span>
-          <h3 className="font-headline-md text-lg font-bold text-error">Danger Zone</h3>
-        </div>
-        <div className="flex flex-col md:flex-row items-center justify-between gap-gutter p-6 bg-error-container/10 rounded-lg">
-          <div className="text-center md:text-left">
-            <p className="font-body-default text-sm text-on-surface font-bold">Session Management</p>
-            <p className="text-xs text-on-surface-variant">Force log out of all active web and mobile sessions.</p>
+      <section className="bg-white dark:bg-slate-900 border border-red-200 dark:border-red-950/60 rounded-2xl p-8 shadow-sm">
+        <div className="flex items-center gap-4 mb-8">
+          {/* Identical Blue Icon Badge - Danger Zone card uses it too as required by layout rules */}
+          <div className="w-12 h-12 flex items-center justify-center bg-primary-container dark:bg-blue-950/30 text-secondary dark:text-blue-400 rounded-xl shrink-0">
+            <span className="material-symbols-outlined text-2xl">warning</span>
           </div>
-          <button 
-            onClick={onLogout}
-            className="border border-error text-error px-6 py-2 rounded-lg font-label-caps font-bold text-xs hover:bg-error/15 transition-all active:scale-95"
-          >
-            LOG OUT DEVICE
-          </button>
-        </div>
-        <div className="mt-gutter flex flex-col md:flex-row items-center justify-between gap-gutter p-6 bg-error-container/20 rounded-lg border border-error-container/30">
-          <div className="text-center md:text-left">
-            <p className="font-body-default text-sm text-error font-bold">Permanent Deletion</p>
-            <p className="text-xs text-on-surface-variant">Irreversibly delete your account and all associated printer telemetry data.</p>
+          <div>
+            <h3 className="font-headline-lg text-lg font-bold text-red-650 dark:text-red-400">Danger Zone</h3>
+            <p className="text-xs text-on-surface-variant dark:text-slate-400 mt-0.5">Destructive workstation session management.</p>
           </div>
-          <button 
-            onClick={() => {
-              if (window.confirm('WARNING: THIS ACTION CANNOT BE UNDONE. Delete account and purge telemetry databases?')) {
-                onLogout();
-              }
-            }}
-            className="bg-error text-on-error px-6 py-2 rounded-lg font-label-caps font-bold text-xs hover:brightness-110 transition-all active:scale-95"
-          >
-            DELETE ACCOUNT
-          </button>
+        </div>
+
+        <div className="space-y-6">
+          {/* Logout device */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-6 bg-slate-50 dark:bg-slate-950/40 border border-outline-variant dark:border-slate-800/80 rounded-xl">
+            <div className="text-center md:text-left">
+              <p className="font-body-default text-sm text-on-surface dark:text-white font-bold">Session Management</p>
+              <p className="text-xs text-on-surface-variant dark:text-slate-400 mt-1 leading-normal">
+                Force terminate workstation token and return to credentials page.
+              </p>
+            </div>
+            <button 
+              onClick={onLogout}
+              className="bg-white dark:bg-slate-900 hover:bg-red-50 dark:hover:bg-red-950/20 text-red-650 border border-red-200 dark:border-red-900/40 font-semibold px-6 py-2.5 rounded-full text-xs transition-all shadow-sm"
+            >
+              Log Out Device
+            </button>
+          </div>
+
+          {/* Delete account */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-6 bg-red-50/50 dark:bg-red-950/10 border border-red-100 dark:border-red-950/30 rounded-xl">
+            <div className="text-center md:text-left">
+              <p className="font-body-default text-sm text-red-750 dark:text-red-400 font-bold">Workstation Deletion</p>
+              <p className="text-xs text-on-surface-variant dark:text-slate-450 mt-1 leading-normal">
+                Irreversibly delete operator workstation configs and telemetry database log cache.
+              </p>
+            </div>
+            <button 
+              onClick={() => {
+                if (window.confirm('WARNING: THIS ACTION CANNOT BE UNDONE. Delete account and purge telemetry databases?')) {
+                  onLogout();
+                }
+              }}
+              className="bg-red-650 hover:bg-red-750 text-white font-semibold px-6 py-2.5 rounded-full text-xs transition-all shadow-sm"
+            >
+              Purge Database
+            </button>
+          </div>
         </div>
       </section>
 
-      {/* Footer system details */}
-      <div className="pt-8 text-center border-t border-outline-variant/20">
-        <p className="text-on-surface-variant font-technical-data text-[10px] uppercase">
-          System Instance: PS-ALPHA-V4.2 • Build: 02.24.2024.1205
-        </p>
-      </div>
     </div>
   );
 }

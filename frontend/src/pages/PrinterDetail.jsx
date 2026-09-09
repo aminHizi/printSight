@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 export default function PrinterDetail({ printers = [], logs = [], onCommand, onDisconnect }) {
   const { id } = useParams();
   const navigate = useNavigate();
-  const consoleEndRef = useRef(null);
+  const consoleContainerRef = useRef(null);
 
   const printer = printers.find(p => p.id === id || p._id === id);
 
@@ -23,12 +23,18 @@ export default function PrinterDetail({ printers = [], logs = [], onCommand, onD
   // Command console input
   const [consoleInput, setConsoleInput] = useState('');
 
-  // Scroll console to bottom on update
+  // Scroll console content to bottom on update without moving the page viewport
   useEffect(() => {
-    if (consoleEndRef.current) {
-      consoleEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (consoleContainerRef.current) {
+      const container = consoleContainerRef.current;
+      container.scrollTop = container.scrollHeight;
     }
   }, [consoleLogs]);
+
+  // Ensure the detail page starts at the top of the viewport when navigating to a printer
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [id]);
 
   // Simulate console live scrolling when printer is printing
   useEffect(() => {
@@ -53,13 +59,13 @@ export default function PrinterDetail({ printers = [], logs = [], onCommand, onD
 
   if (!printer) {
     return (
-      <div className="text-center py-20 bg-surface border border-outline-variant rounded-lg max-w-md mx-auto space-y-6">
+      <div className="text-center py-20 bg-white dark:bg-slate-900 border border-outline-variant dark:border-slate-800 rounded-2xl max-w-md mx-auto space-y-6">
         <span className="material-symbols-outlined text-error text-5xl">warning</span>
-        <h3 className="font-headline-md text-lg font-bold text-on-surface">Printer Not Found</h3>
-        <p className="text-on-surface-variant font-body-default text-sm px-6">The printer configuration has been removed or the ID is invalid.</p>
+        <h3 className="font-headline-md text-lg font-bold text-on-surface dark:text-white">Printer Not Found</h3>
+        <p className="text-on-surface-variant dark:text-slate-400 font-body-default text-sm px-6">The printer configuration has been removed or the ID is invalid.</p>
         <button 
           onClick={() => navigate('/')} 
-          className="bg-primary text-on-primary px-6 py-2 rounded font-label-caps text-xs font-bold active:scale-95 transition-all"
+          className="bg-primary hover:bg-blue-700 text-white px-6 py-2.5 rounded-full font-label-caps text-xs font-bold active:scale-95 transition-all"
         >
           Return to Dashboard
         </button>
@@ -99,32 +105,45 @@ export default function PrinterDetail({ printers = [], logs = [], onCommand, onD
     }
   };
 
+  // Safe access helpers
+  const timeRemaining = printer.timeRemaining || '—';
+  const timeShort = timeRemaining !== '—' ? (timeRemaining.split(' ')[0] || '—') : '—';
+
   return (
-    <div className="space-y-8 select-none">
+    <div className="space-y-6 select-none pt-2">
+      {/* Back button */}
+      <button 
+        onClick={() => navigate('/')}
+        className="flex items-center gap-2 text-on-surface-variant dark:text-slate-400 hover:text-primary transition-colors duration-200 group"
+      >
+        <span className="material-symbols-outlined text-lg transition-transform group-hover:-translate-x-1">arrow_back</span>
+        <span className="text-sm font-semibold">Back to Fleet Overview</span>
+      </button>
+
       {/* Page Header & Status Bar */}
-      <section className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 border-b border-outline-variant/30 pb-6">
+      <section className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 border-b border-outline-variant/30 dark:border-slate-800/60 pb-6">
         <div>
-          <h2 className="font-headline-lg text-3xl font-bold mb-1.5 text-on-surface">{printer.name}</h2>
+          <h2 className="font-headline-lg text-3xl font-bold mb-1.5 text-on-surface dark:text-white">{printer.name}</h2>
           <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1.5 bg-surface-container-high px-3 py-1.5 rounded-sm border border-outline-variant/60 text-xs">
+            <span className="flex items-center gap-1.5 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-lg border border-outline-variant/60 dark:border-slate-800 text-xs">
               <span className="material-symbols-outlined text-[16px] text-primary">link</span>
-              <span className="font-technical-data font-semibold">{printer.type}</span>
+              <span className="font-technical-data font-semibold text-on-surface dark:text-white">{printer.type}</span>
             </span>
-            <span className="flex items-center gap-2 px-3 py-1.5 bg-primary-container/10 border border-primary/20 rounded-sm text-xs">
+            <span className="flex items-center gap-2 px-3 py-1.5 bg-primary-container/10 dark:bg-blue-950/20 border border-primary/20 dark:border-blue-900/30 rounded-lg text-xs">
               <span className={`w-2 h-2 rounded-full ${
                 printer.status === 'PRINTING' ? 'bg-secondary' : 
                 printer.status === 'HEATING' ? 'bg-primary animate-pulse' :
                 printer.status === 'ERROR' ? 'bg-error animate-pulse' : 'bg-outline'
               }`}></span>
-              <span className="font-label-caps font-bold text-primary">{printer.status}</span>
+              <span className="font-label-caps font-bold text-primary dark:text-blue-400">{printer.status}</span>
             </span>
           </div>
         </div>
 
-        <div className="flex gap-4 w-full sm:w-auto">
+        <div className="w-full sm:w-auto">
           <button 
             onClick={handleDelete}
-            className="flex-1 sm:flex-none px-4 py-2.5 border border-outline text-on-surface font-label-caps text-xs font-bold rounded-sm hover:bg-error/15 hover:text-error hover:border-error/45 transition-colors active:scale-95"
+            className="w-full sm:w-auto px-4 py-2 rounded-lg border border-outline-variant dark:border-slate-800 text-on-surface dark:text-white font-label-caps text-xs font-bold hover:bg-error/15 hover:text-error hover:border-error/45 transition-colors active:scale-95"
           >
             Disconnect printer
           </button>
@@ -132,18 +151,18 @@ export default function PrinterDetail({ printers = [], logs = [], onCommand, onD
       </section>
 
       {/* Camera Live stream and Logs Grid */}
-      <div className="grid grid-cols-12 gap-gutter">
+      <div className="grid grid-cols-12 gap-6">
         {/* Live feed video container */}
         <div className="col-span-12 lg:col-span-8">
-          <div className="relative bg-surface-container-low border border-outline-variant rounded-sm overflow-hidden group">
-            <div className="absolute top-4 left-4 z-10 flex items-center gap-2 bg-background/80 backdrop-blur-md px-3 py-1.5 rounded-sm border border-outline-variant/30 text-xs">
+          <div className="relative bg-white dark:bg-slate-900 border border-outline-variant dark:border-slate-800 rounded-2xl overflow-hidden group">
+            <div className="absolute top-4 left-4 z-10 flex items-center gap-2 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-outline-variant/30 dark:border-slate-800/60 text-xs">
               <span className="material-symbols-outlined text-primary text-[14px]">videocam</span>
-              <span className="font-technical-data text-on-surface font-semibold">LIVE_FEED_01</span>
+              <span className="font-technical-data text-on-surface dark:text-white font-semibold">LIVE_FEED_01</span>
             </div>
-            <div className="absolute bottom-4 right-4 z-10 font-technical-data text-[10px] text-on-surface-variant/80 bg-background/80 backdrop-blur-md px-3 py-1 rounded-sm border border-outline-variant/30">
+            <div className="absolute bottom-4 right-4 z-10 font-technical-data text-[10px] text-on-surface-variant/80 dark:text-slate-400 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-3 py-1 rounded-lg border border-outline-variant/30 dark:border-slate-800/60">
               last updated 3s ago
             </div>
-            <div className="aspect-video w-full bg-surface-container-lowest">
+            <div className="aspect-video w-full bg-slate-50 dark:bg-slate-950">
               <img 
                 className="w-full h-full object-cover" 
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuDygfR-z1BHgMunWrsuBAwmfZhvpJOuYLJ3bYbEOfno6fz-qegOer7fq2h8UxKjUshHx3MglaRa_pKK1XwLs0zfXYQ7g__hnUK_0FnVTTud4HX33XWemLIsqIR9U6dBPyBoxKWv5ZPMJ1Ev2_7VYLZekKHR9YVmf1sk_2aUUvqab5S5HkTVbXbA6xOUbgjIkZHyptNiUe6QEXmJhntIt_3ivND-F6mM5XpHB8XzmtgnV4-ZZkd4PoHjFg" 
@@ -151,10 +170,10 @@ export default function PrinterDetail({ printers = [], logs = [], onCommand, onD
               />
             </div>
             {/* Live progress footer */}
-            <div className="absolute bottom-0 left-0 w-full h-1.5 bg-surface-variant">
+            <div className="absolute bottom-0 left-0 w-full h-1.5 bg-slate-200 dark:bg-slate-800">
               <div 
-                className="h-full bg-primary transition-all duration-1000" 
-                style={{ width: `${printer.status === 'PRINTING' ? printer.progress : 0}%` }}
+                className="h-full bg-primary transition-all duration-1000 rounded-full" 
+                style={{ width: `${printer.status === 'PRINTING' ? (printer.progress || 0) : 0}%` }}
               ></div>
             </div>
           </div>
@@ -162,14 +181,14 @@ export default function PrinterDetail({ printers = [], logs = [], onCommand, onD
 
         {/* Telemetry Logs Panel for this printer */}
         <div className="col-span-12 lg:col-span-4 flex flex-col">
-          <div className="flex-grow bg-surface-container-low border border-outline-variant rounded-sm flex flex-col min-h-[300px]">
-            <div className="px-gutter py-4 border-b border-outline-variant flex justify-between items-center bg-surface-container">
-              <span className="font-label-caps text-xs font-bold uppercase tracking-wider text-on-surface">Unit logs</span>
-              <span className="material-symbols-outlined text-on-surface-variant text-[18px]">filter_list</span>
+          <div className="flex-grow bg-white dark:bg-slate-900 border border-outline-variant dark:border-slate-800 rounded-2xl flex flex-col min-h-[300px]">
+            <div className="px-5 py-4 border-b border-outline-variant dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900/60 rounded-t-2xl">
+              <span className="font-label-caps text-xs font-bold uppercase tracking-wider text-on-surface dark:text-white">Unit logs</span>
+              <span className="material-symbols-outlined text-on-surface-variant dark:text-slate-400 text-[18px]">filter_list</span>
             </div>
             <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-4 max-h-[340px]">
               {printerLogs.length === 0 ? (
-                <div className="text-center py-10 text-on-surface-variant/40 text-xs">No historical records for this unit.</div>
+                <div className="text-center py-10 text-on-surface-variant/40 dark:text-slate-500 text-xs">No historical records for this unit.</div>
               ) : (
                 printerLogs.map(log => {
                   let badge = 'bg-primary';
@@ -177,12 +196,12 @@ export default function PrinterDetail({ printers = [], logs = [], onCommand, onD
                   else if (log.severity === 'WARNING') badge = 'bg-secondary';
 
                   return (
-                    <div key={log.id} className="flex gap-3">
+                    <div key={log.id || log._id} className="flex gap-3">
                       <div className="mt-1"><span className={`w-2 h-2 rounded-full block ${badge}`}></span></div>
                       <div className="flex-1">
-                        <p className="font-technical-data text-xs font-semibold text-on-surface">{log.errorCode}</p>
-                        <p className="text-xs text-on-surface-variant leading-snug">{log.message}</p>
-                        <span className="font-technical-data text-[9px] text-on-surface-variant/50 uppercase mt-0.5 block">{log.timestamp}</span>
+                        <p className="font-technical-data text-xs font-semibold text-on-surface dark:text-white">{log.errorCode}</p>
+                        <p className="text-xs text-on-surface-variant dark:text-slate-400 leading-snug">{log.message}</p>
+                        <span className="font-technical-data text-[9px] text-on-surface-variant/50 dark:text-slate-500 uppercase mt-0.5 block">{log.timestamp}</span>
                       </div>
                     </div>
                   );
@@ -194,69 +213,57 @@ export default function PrinterDetail({ printers = [], logs = [], onCommand, onD
       </div>
 
       {/* Control Actions Panel */}
-      <section className="bg-surface-container-low border border-outline-variant p-6 rounded-sm flex flex-wrap gap-4 items-center justify-between">
+      <section className="bg-white dark:bg-slate-900 border border-outline-variant dark:border-slate-800 p-6 rounded-2xl flex flex-wrap gap-4 items-center justify-between">
         <div>
-          <h4 className="text-sm font-bold text-on-surface">Hardware Operations Command</h4>
-          <p className="text-xs text-on-surface-variant mt-0.5">Execute immediate g-code overrides or status changes.</p>
+          <h4 className="text-sm font-bold text-on-surface dark:text-white">Hardware Operations Command</h4>
+          <p className="text-xs text-on-surface-variant dark:text-slate-400 mt-0.5">Execute immediate g-code overrides or status changes.</p>
         </div>
 
-        <div className="flex gap-4">
-          {printer.status === 'PRINTING' && (
-            <>
-              <button 
-                onClick={handlePause}
-                className="bg-secondary text-background font-label-caps text-xs font-bold px-6 py-2.5 rounded hover:opacity-90 active:scale-95 transition-all"
-              >
-                PAUSE PRINT
-              </button>
-              <button 
-                onClick={handleCancel}
-                className="bg-error text-on-error font-label-caps text-xs font-bold px-6 py-2.5 rounded hover:opacity-90 active:scale-95 transition-all"
-              >
-                CANCEL PRINT
-              </button>
-            </>
-          )}
-
+        <div className="flex flex-wrap gap-3">
+          <button
+            onClick={handleStartPrint}
+            disabled={printer.status !== 'IDLE'}
+            className="bg-primary text-white font-label-caps text-xs font-bold px-5 py-2.5 rounded-lg hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            START
+          </button>
+          <button
+            onClick={handlePause}
+            disabled={printer.status !== 'PRINTING'}
+            className="bg-secondary text-white font-label-caps text-xs font-bold px-5 py-2.5 rounded-lg hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            PAUSE
+          </button>
+          <button
+            onClick={handleCancel}
+            disabled={printer.status === 'IDLE'}
+            className="bg-error text-white font-label-caps text-xs font-bold px-5 py-2.5 rounded-lg hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            STOP
+          </button>
+ 
           {printer.status === 'ERROR' && printer.errorAlert === 'Paused by Operator' && (
-            <>
-              <button 
-                onClick={handleResume}
-                className="bg-primary text-on-primary font-label-caps text-xs font-bold px-6 py-2.5 rounded hover:opacity-90 active:scale-95 transition-all"
-              >
-                RESUME PRINT
-              </button>
-              <button 
-                onClick={handleCancel}
-                className="bg-error text-on-error font-label-caps text-xs font-bold px-6 py-2.5 rounded hover:opacity-90 active:scale-95 transition-all"
-              >
-                CANCEL JOB
-              </button>
-            </>
+            <button 
+              onClick={handleResume}
+              className="bg-primary text-white font-label-caps text-xs font-bold px-5 py-2.5 rounded-lg hover:bg-blue-700 active:scale-95 transition-all"
+            >
+              RESUME
+            </button>
           )}
-
+ 
           {printer.status === 'ERROR' && printer.errorAlert !== 'Paused by Operator' && (
             <button 
               onClick={handleDismiss}
-              className="bg-primary text-on-primary font-label-caps text-xs font-bold px-6 py-2.5 rounded hover:opacity-90 active:scale-95 transition-all"
+              className="bg-primary text-white font-label-caps text-xs font-bold px-5 py-2.5 rounded-lg hover:bg-blue-700 active:scale-95 transition-all"
             >
               DISMISS ALERT & RESET
             </button>
           )}
-
-          {printer.status === 'IDLE' && (
-            <button 
-              onClick={handleStartPrint}
-              className="bg-primary text-on-primary font-label-caps text-xs font-bold px-6 py-2.5 rounded hover:opacity-90 active:scale-95 transition-all"
-            >
-              START PRINT JOB
-            </button>
-          )}
-          
+ 
           {printer.status === 'HEATING' && (
             <button 
               onClick={handleCancel}
-              className="bg-error text-on-error font-label-caps text-xs font-bold px-6 py-2.5 rounded hover:opacity-90 active:scale-95 transition-all"
+              className="bg-error text-white font-label-caps text-xs font-bold px-5 py-2.5 rounded-lg hover:opacity-90 active:scale-95 transition-all"
             >
               ABORT PRE-HEAT
             </button>
@@ -265,96 +272,96 @@ export default function PrinterDetail({ printers = [], logs = [], onCommand, onD
       </section>
 
       {/* Bento Telemetries */}
-      <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-gutter">
+      <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
         {/* Nozzle Temp */}
-        <div className="bg-surface-container-low border border-outline-variant p-5 rounded-sm flex flex-col justify-between">
-          <span className="font-label-caps text-[10px] text-on-surface-variant font-bold uppercase tracking-wide">Nozzle Temp</span>
+        <div className="bg-white dark:bg-slate-900 border border-outline-variant dark:border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
+          <span className="font-label-caps text-[10px] text-on-surface-variant dark:text-slate-400 font-bold uppercase tracking-wide">Nozzle Temp</span>
           <div className="flex justify-between items-end mt-4">
-            <div className="font-technical-data text-2xl font-bold text-on-surface">
-              {printer.nozzleTemp}
-              <span className="text-sm font-body-default text-on-surface-variant font-normal ml-0.5">°C</span>
+            <div className="font-technical-data text-2xl font-bold text-on-surface dark:text-white">
+              {printer.nozzleTemp ?? '—'}
+              <span className="text-sm font-body-default text-on-surface-variant dark:text-slate-400 font-normal ml-0.5">°C</span>
             </div>
             {/* Sparkline chart */}
             <div className="w-16 h-8 flex items-end gap-[2px]">
-              <div className="w-full bg-primary/20 h-2"></div>
-              <div className="w-full bg-primary/20 h-3"></div>
-              <div className="w-full bg-primary/20 h-4"></div>
-              <div className={`w-full h-6 ${printer.status === 'PRINTING' || printer.status === 'HEATING' ? 'bg-primary' : 'bg-primary/20'}`}></div>
-              <div className={`w-full h-5 ${printer.status === 'PRINTING' || printer.status === 'HEATING' ? 'bg-primary' : 'bg-primary/20'}`}></div>
+              <div className="w-full bg-primary/20 h-2 rounded-sm"></div>
+              <div className="w-full bg-primary/20 h-3 rounded-sm"></div>
+              <div className="w-full bg-primary/20 h-4 rounded-sm"></div>
+              <div className={`w-full h-6 rounded-sm ${printer.status === 'PRINTING' || printer.status === 'HEATING' ? 'bg-primary' : 'bg-primary/20'}`}></div>
+              <div className={`w-full h-5 rounded-sm ${printer.status === 'PRINTING' || printer.status === 'HEATING' ? 'bg-primary' : 'bg-primary/20'}`}></div>
             </div>
           </div>
-          <span className="text-[10px] font-technical-data text-on-surface-variant mt-3 block">
-            TARGET: {printer.targetNozzleTemp}°C
+          <span className="text-[10px] font-technical-data text-on-surface-variant dark:text-slate-400 mt-3 block">
+            TARGET: {printer.targetNozzleTemp ?? '—'}°C
           </span>
         </div>
 
         {/* Bed Temp */}
-        <div className="bg-surface-container-low border border-outline-variant p-5 rounded-sm flex flex-col justify-between">
-          <span className="font-label-caps text-[10px] text-on-surface-variant font-bold uppercase tracking-wide">Bed Temp</span>
+        <div className="bg-white dark:bg-slate-900 border border-outline-variant dark:border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
+          <span className="font-label-caps text-[10px] text-on-surface-variant dark:text-slate-400 font-bold uppercase tracking-wide">Bed Temp</span>
           <div className="flex justify-between items-end mt-4">
-            <div className="font-technical-data text-2xl font-bold text-on-surface">
-              {printer.bedTemp}
-              <span className="text-sm font-body-default text-on-surface-variant font-normal ml-0.5">°C</span>
+            <div className="font-technical-data text-2xl font-bold text-on-surface dark:text-white">
+              {printer.bedTemp ?? '—'}
+              <span className="text-sm font-body-default text-on-surface-variant dark:text-slate-400 font-normal ml-0.5">°C</span>
             </div>
             {/* Sparkline chart */}
             <div className="w-16 h-8 flex items-end gap-[2px]">
-              <div className="w-full bg-primary/20 h-3"></div>
-              <div className="w-full bg-primary/20 h-3"></div>
-              <div className="w-full bg-primary/20 h-4"></div>
-              <div className={`w-full h-5 ${printer.status === 'PRINTING' || printer.status === 'HEATING' ? 'bg-primary' : 'bg-primary/20'}`}></div>
-              <div className={`w-full h-4 ${printer.status === 'PRINTING' || printer.status === 'HEATING' ? 'bg-primary' : 'bg-primary/20'}`}></div>
+              <div className="w-full bg-primary/20 h-3 rounded-sm"></div>
+              <div className="w-full bg-primary/20 h-3 rounded-sm"></div>
+              <div className="w-full bg-primary/20 h-4 rounded-sm"></div>
+              <div className={`w-full h-5 rounded-sm ${printer.status === 'PRINTING' || printer.status === 'HEATING' ? 'bg-primary' : 'bg-primary/20'}`}></div>
+              <div className={`w-full h-4 rounded-sm ${printer.status === 'PRINTING' || printer.status === 'HEATING' ? 'bg-primary' : 'bg-primary/20'}`}></div>
             </div>
           </div>
-          <span className="text-[10px] font-technical-data text-on-surface-variant mt-3 block">
-            TARGET: {printer.targetBedTemp}°C
+          <span className="text-[10px] font-technical-data text-on-surface-variant dark:text-slate-400 mt-3 block">
+            TARGET: {printer.targetBedTemp ?? '—'}°C
           </span>
         </div>
 
         {/* Progress */}
-        <div className="bg-surface-container-low border border-outline-variant p-5 rounded-sm flex flex-col justify-between">
-          <span className="font-label-caps text-[10px] text-on-surface-variant font-bold uppercase tracking-wide">Progress</span>
+        <div className="bg-white dark:bg-slate-900 border border-outline-variant dark:border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
+          <span className="font-label-caps text-[10px] text-on-surface-variant dark:text-slate-400 font-bold uppercase tracking-wide">Progress</span>
           <div className="flex justify-between items-end mt-4">
             <div className="font-technical-data text-2xl font-bold text-primary">
-              {printer.status === 'PRINTING' ? printer.progress : printer.status === 'HEATING' ? '0' : '—'}
-              {printer.status === 'PRINTING' && <span className="text-sm font-body-default text-on-surface-variant font-normal ml-0.5">%</span>}
+              {printer.status === 'PRINTING' ? (printer.progress || 0) : printer.status === 'HEATING' ? '0' : '—'}
+              {printer.status === 'PRINTING' && <span className="text-sm font-body-default text-on-surface-variant dark:text-slate-400 font-normal ml-0.5">%</span>}
             </div>
             <div className="w-16 h-8 flex items-end gap-[2px]">
-              <div className="w-full bg-primary h-1"></div>
-              <div className="w-full bg-primary h-2"></div>
-              <div className="w-full bg-primary h-3"></div>
-              <div className="w-full bg-primary h-4"></div>
-              <div className="w-full bg-primary h-5"></div>
+              <div className="w-full bg-primary h-1 rounded-sm"></div>
+              <div className="w-full bg-primary h-2 rounded-sm"></div>
+              <div className="w-full bg-primary h-3 rounded-sm"></div>
+              <div className="w-full bg-primary h-4 rounded-sm"></div>
+              <div className="w-full bg-primary h-5 rounded-sm"></div>
             </div>
           </div>
-          <span className="text-[10px] font-technical-data text-on-surface-variant mt-3 block">
+          <span className="text-[10px] font-technical-data text-on-surface-variant dark:text-slate-400 mt-3 block">
             {printer.status === 'PRINTING' ? 'BUILD ACTIVE' : 'NO ACTIVE BUILD'}
           </span>
         </div>
 
         {/* Time Remaining */}
-        <div className="bg-surface-container-low border border-outline-variant p-5 rounded-sm flex flex-col justify-between">
-          <span className="font-label-caps text-[10px] text-on-surface-variant font-bold uppercase tracking-wide">Time Remaining</span>
+        <div className="bg-white dark:bg-slate-900 border border-outline-variant dark:border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
+          <span className="font-label-caps text-[10px] text-on-surface-variant dark:text-slate-400 font-bold uppercase tracking-wide">Time Remaining</span>
           <div className="flex justify-between items-end mt-4">
-            <div className="font-technical-data text-2xl font-bold text-on-surface">
-              {printer.status === 'PRINTING' ? (printer.timeRemaining.split(' ')[0] || '—') : printer.status === 'HEATING' ? 'Heating' : '—'}
+            <div className="font-technical-data text-2xl font-bold text-on-surface dark:text-white">
+              {printer.status === 'PRINTING' ? timeShort : printer.status === 'HEATING' ? 'Heating' : '—'}
             </div>
-            <span className="material-symbols-outlined text-on-surface-variant text-2xl">schedule</span>
+            <span className="material-symbols-outlined text-on-surface-variant dark:text-slate-400 text-2xl">schedule</span>
           </div>
-          <span className="text-[10px] font-technical-data text-on-surface-variant mt-3 block">
+          <span className="text-[10px] font-technical-data text-on-surface-variant dark:text-slate-400 mt-3 block">
             {printer.status === 'PRINTING' ? 'ESTIMATING COMPLETION' : 'STANDBY MODE'}
           </span>
         </div>
       </section>
 
       {/* Technical Specs & G-Code Console */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-gutter mt-gutter">
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* G-Code console */}
-        <div className="bg-surface-container-low border border-outline-variant rounded-sm p-5">
-          <h4 className="font-label-caps text-xs font-bold text-on-surface mb-4 uppercase">G-Code Console</h4>
-          <div className="bg-background rounded-sm p-4 h-48 overflow-y-auto custom-scrollbar font-technical-data text-xs leading-relaxed text-left flex flex-col space-y-1">
+        <div className="bg-white dark:bg-slate-900 border border-outline-variant dark:border-slate-800 rounded-2xl p-5">
+          <h4 className="font-label-caps text-xs font-bold text-on-surface dark:text-white mb-4 uppercase">G-Code Console</h4>
+          <div ref={consoleContainerRef} className="bg-slate-50 dark:bg-slate-950 rounded-xl p-4 h-48 overflow-y-auto custom-scrollbar font-technical-data text-xs leading-relaxed text-left flex flex-col space-y-1">
             {consoleLogs.map((log, index) => {
-              let color = 'text-on-surface-variant/40';
-              if (log.type === 'res') color = 'text-on-surface-variant/60';
+              let color = 'text-on-surface-variant/40 dark:text-slate-500';
+              if (log.type === 'res') color = 'text-on-surface-variant/60 dark:text-slate-400';
               else if (log.type === 'user') color = 'text-primary font-semibold';
               else if (log.type === 'cmd') {
                 if (log.text.startsWith('M105')) color = 'text-primary';
@@ -366,7 +373,6 @@ export default function PrinterDetail({ printers = [], logs = [], onCommand, onD
                 </div>
               );
             })}
-            <div ref={consoleEndRef} />
           </div>
           {/* Console inputs */}
           <form onSubmit={handleConsoleSubmit} className="mt-4 flex gap-2">
@@ -374,12 +380,12 @@ export default function PrinterDetail({ printers = [], logs = [], onCommand, onD
               type="text" 
               value={consoleInput}
               onChange={(e) => setConsoleInput(e.target.value)}
-              className="flex-grow bg-background border border-outline-variant/60 rounded px-3 py-2 text-xs font-mono text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-on-surface-variant/35"
+              className="flex-grow bg-slate-50 dark:bg-slate-950 border border-outline-variant/60 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-on-surface dark:text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-on-surface-variant/35 dark:placeholder:text-slate-500"
               placeholder="Send g-code command... (e.g. G28, M105)"
             />
             <button 
               type="submit"
-              className="bg-primary text-on-primary font-label-caps font-bold px-4 rounded text-xs hover:brightness-110 active:scale-95 transition-all"
+              className="bg-primary text-white font-label-caps font-bold px-4 rounded-xl text-xs hover:bg-blue-700 active:scale-95 transition-all"
             >
               SEND
             </button>
@@ -387,24 +393,24 @@ export default function PrinterDetail({ printers = [], logs = [], onCommand, onD
         </div>
 
         {/* Material Specs */}
-        <div className="bg-surface-container-low border border-outline-variant rounded-sm p-5 flex flex-col justify-between">
-          <h4 className="font-label-caps text-xs font-bold text-on-surface mb-4 uppercase">Material Specifications</h4>
+        <div className="bg-white dark:bg-slate-900 border border-outline-variant dark:border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
+          <h4 className="font-label-caps text-xs font-bold text-on-surface dark:text-white mb-4 uppercase">Material Specifications</h4>
           <div className="space-y-4">
-            <div className="flex justify-between border-b border-outline-variant/30 pb-2">
-              <span className="text-xs text-on-surface-variant">Material Type</span>
-              <span className="font-technical-data text-xs font-semibold">{printer.materialType || 'PLA (Black)'}</span>
+            <div className="flex justify-between border-b border-outline-variant/30 dark:border-slate-800/60 pb-2">
+              <span className="text-xs text-on-surface-variant dark:text-slate-400">Material Type</span>
+              <span className="font-technical-data text-xs font-semibold text-on-surface dark:text-white">{printer.materialType || 'PLA (Black)'}</span>
             </div>
-            <div className="flex justify-between border-b border-outline-variant/30 pb-2">
-              <span className="text-xs text-on-surface-variant">Filament Diameter</span>
-              <span className="font-technical-data text-xs font-semibold">{printer.filamentDiameter || 1.75}mm (+/- 0.02)</span>
+            <div className="flex justify-between border-b border-outline-variant/30 dark:border-slate-800/60 pb-2">
+              <span className="text-xs text-on-surface-variant dark:text-slate-400">Filament Diameter</span>
+              <span className="font-technical-data text-xs font-semibold text-on-surface dark:text-white">{printer.filamentDiameter || 1.75}mm (+/- 0.02)</span>
             </div>
-            <div className="flex justify-between border-b border-outline-variant/30 pb-2">
-              <span className="text-xs text-on-surface-variant">Spool Weight Remaining</span>
-              <span className="font-technical-data text-xs font-semibold">{printer.spoolRemaining}g / 1000g</span>
+            <div className="flex justify-between border-b border-outline-variant/30 dark:border-slate-800/60 pb-2">
+              <span className="text-xs text-on-surface-variant dark:text-slate-400">Spool Weight Remaining</span>
+              <span className="font-technical-data text-xs font-semibold text-on-surface dark:text-white">{printer.spoolRemaining ?? '—'}g / 1000g</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-xs text-on-surface-variant">Ambient Temperature</span>
-              <span className="font-technical-data text-xs font-semibold">42.8°C (Enclosure)</span>
+              <span className="text-xs text-on-surface-variant dark:text-slate-400">Ambient Temperature</span>
+              <span className="font-technical-data text-xs font-semibold text-on-surface dark:text-white">42.8°C (Enclosure)</span>
             </div>
           </div>
         </div>

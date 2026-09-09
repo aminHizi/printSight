@@ -18,7 +18,9 @@ const PrinterSchema = new mongoose.Schema({
   accessLevel: { type: String, default: 'Standard Monitor' },
   spoolRemaining: { type: Number, default: 1000 },
   materialType: { type: String, default: 'PLA (Black)' },
-  filamentDiameter: { type: Number, default: 1.75 }
+  filamentDiameter: { type: Number, default: 1.75 },
+  ams: { type: mongoose.Schema.Types.Mixed, default: null },
 }, { timestamps: true });
+// duplicate timestamps removed
 
 module.exports = mongoose.model('Printer', PrinterSchema);

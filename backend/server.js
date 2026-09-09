@@ -128,12 +128,29 @@ app.post('/api/addPrinter', authMiddleware, async (req, res) => {
   }
 });
 
+app.delete('/api/printers/:id', authMiddleware, async (req, res) => {
+  const userId = req.user._id;
+  const printerId = req.params.id;
+
+  try {
+    const deletedPrinter = await Printer.findOneAndDelete({ _id: printerId, userId });
+    if (!deletedPrinter) {
+      return res.status(404).json({ success: false, message: 'Printer not found or not owned by user' });
+    }
+
+    res.status(200).json({ success: true, message: 'Printer disconnected and removed successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error disconnecting printer', error: error.message });
+  }
+});
+
 // GET /api/logs - Fetch logs with optional filters (authenticated)
 app.get('/api/logs', authMiddleware, async (req, res) => {
   const owner = req.user.email;
   const { printer, severity, search } = req.query;
 
-  const query = { owner };
+  // Case-insensitive query match for owner email to avoid casing differences
+  const query = { owner: { $regex: new RegExp("^" + owner + "$", "i") } };
 
   if (printer && printer !== 'All Printers') {
     query.printerName = printer;
